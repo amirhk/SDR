@@ -60,8 +60,8 @@ def importMnistFashion():
   original_dim = sample_channels * sample_dim ** 2
   num_classes = 10
 
-  train_file_name = 'data/fashionmnist/fashion-mnist_train.csv'
-  test_file_name = 'data/fashionmnist/fashion-mnist_test.csv'
+  train_file_name = '../data/fashionmnist/fashion-mnist_train.csv'
+  test_file_name = '../data/fashionmnist/fashion-mnist_test.csv'
 
   train_meta_data = np.genfromtxt(train_file_name, delimiter=',')
   test_meta_data = np.genfromtxt(test_file_name, delimiter=',')
@@ -69,8 +69,11 @@ def importMnistFashion():
   x_train = train_meta_data[:,1:]
   x_test = test_meta_data[:,1:]
 
-  y_train = train_meta_data[:,1]
-  y_test = test_meta_data[:,1]
+  y_train = train_meta_data[:,0]
+  y_test = test_meta_data[:,0]
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
 
   return ('mnist-fashion', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 

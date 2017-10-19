@@ -33,7 +33,11 @@ from keras.models import Model
 
 from scipy.stats import norm
 
+import sys
+sys.path.append('utils')
+
 from importDatasets import importMnist
+from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
 
@@ -46,6 +50,7 @@ from saveUtils import saveSamples
 # -----------------------------------------------------------------------------
 
 # fh_import_dataset = lambda : importMnist()
+# fh_import_dataset = lambda : importMnistFashion()
 # fh_import_dataset = lambda : importOlivetti()
 # fh_import_dataset = lambda : importOlivetti('glasses_labels')
 # fh_import_dataset = lambda : importOlivetti('beard_labels')
