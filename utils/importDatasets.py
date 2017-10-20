@@ -32,6 +32,42 @@ from keras.datasets import mnist
 from sklearn.datasets import fetch_olivetti_faces
 
 
+
+
+def importDatasetForSemisupervisedTraining(dataset_string):
+  if dataset_string == 'mnist':
+    fh_import_dataset = lambda : importMnist()
+  elif dataset_string == 'mnist-fashion':
+    fh_import_dataset = lambda : importMnistFashion()
+
+  (dataset_name,
+    x_train,
+    x_test,
+    y_train,
+    y_test,
+    sample_dim,
+    sample_channels,
+    original_dim,
+    num_classes) = fh_import_dataset()
+
+  tmp_x_train_labeled = np.repeat(x_train[:1000,:], 50, axis=0)
+  tmp_y_train_labeled = np.repeat(y_train[:1000], 50, axis=0)
+
+  random_ordering = np.random.permutation(50000)
+  tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
+  tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
+
+  tmp_x_val = x_train[1000:10000,:]
+  tmp_y_val = y_train[1000:10000]
+
+  tmp_x_train_unlabeled = x_train[10000:,:]
+  tmp_y_train_unlabeled = y_train[10000:]
+
+  return (dataset_string, x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes, tmp_x_train_labeled, tmp_y_train_labeled, tmp_x_val, tmp_y_val, tmp_x_train_unlabeled, tmp_y_train_unlabeled)
+
+
+
+
 def importMnist():
   # meta
   sample_dim = 28
@@ -65,12 +101,12 @@ def importMnistFashion():
   num_classes = 10
 
   # print(os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv'))
-  
+
   dirname, _ = os.path.split(os.path.abspath(__file__))
   train_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_train.csv')
   test_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_test.csv')
 
-  
+
   # train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '..\\data\\fashionmnist\\fashion-mnist_train.csv')
   # test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
 

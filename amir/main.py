@@ -45,14 +45,27 @@ from importDatasets import importMnist
 from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
+from importDatasets import importDatasetForSemisupervisedTraining
 
 # -----------------------------------------------------------------------------
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
 # fh_import_dataset = lambda : importMnist()
-fh_import_dataset = lambda : importMnistFashion()
+# fh_import_dataset = lambda : importMnistFashion()
 
+# (dataset_name,
+#   x_train,
+#   x_test,
+#   y_train,
+#   y_test,
+#   sample_dim,
+#   sample_channels,
+#   original_dim,
+#   num_classes) = fh_import_dataset()
+
+
+fh_import_dataset = lambda : importDatasetForSemisupervisedTraining()
 (dataset_name,
   x_train,
   x_test,
@@ -61,7 +74,13 @@ fh_import_dataset = lambda : importMnistFashion()
   sample_dim,
   sample_channels,
   original_dim,
-  num_classes) = fh_import_dataset()
+  num_classes,
+  x_train_labeled,
+  y_train_labeled,
+  x_val,
+  y_val,
+  x_train_unlabeled,
+  y_train_unlabeled) = fh_import_dataset('')
 
 batch_size = 100
 latent_dim = 3
