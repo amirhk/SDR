@@ -33,6 +33,55 @@ for cv_type in cv_types:
             lowest_bic = bic[-1]
             best_gmm = gmm
 
+
+
+
+
+
+
+
+
+
+
+
+from importDatasets import importMnist
+from importDatasets import importMnistFashion
+from importDatasets import importOlivetti
+from importDatasets import importSquareAndCross
+
+# -----------------------------------------------------------------------------
+#                                                                    Fetch Data
+# -----------------------------------------------------------------------------
+
+# fh_import_dataset = lambda : importMnist()
+fh_import_dataset = lambda : importMnistFashion()
+
+(dataset_name,
+  x_train,
+  x_test,
+  y_train,
+  y_test,
+  sample_dim,
+  sample_channels,
+  original_dim,
+  num_classes) = fh_import_dataset()
+
+import pickle
+model_weights = pickle.load(open('weights_vaesdr_3d', 'rb'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bic = np.array(bic)
 color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
                               'darkorange'])
