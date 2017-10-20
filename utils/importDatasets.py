@@ -64,10 +64,15 @@ def importMnistFashion():
   original_dim = sample_channels * sample_dim ** 2
   num_classes = 10
 
-  print(os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv'))
+  # print(os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv'))
+  
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  train_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_train.csv')
+  test_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_test.csv')
 
-  train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv')
-  test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
+  
+  # train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '..\\data\\fashionmnist\\fashion-mnist_train.csv')
+  # test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
 
   train_meta_data = np.genfromtxt(train_file_name, delimiter=',')
   test_meta_data = np.genfromtxt(test_file_name, delimiter=',')
