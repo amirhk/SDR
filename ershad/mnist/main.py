@@ -25,15 +25,19 @@ batch_size = 100
 original_dim = 784
 latent_dim = 3
 intermediate_dim = 500
-nb_epoch = 20
+nb_epoch = 1
 epsilon_std = 1.0
 
 learning_rate = 0.00001
 
 x = Input(batch_shape=(batch_size, original_dim))
-h = Dense(intermediate_dim, activation='relu')(x)
-z_mean = Dense(latent_dim)(h)
-z_log_var = Dense(latent_dim)(h)
+h = Dense(intermediate_dim, activation='relu')
+z_mean = Dense(latent_dim)
+z_log_var = Dense(latent_dim)
+
+_h = h(x)
+_z_mean = z_mean(_h)
+_z_log_var = z_log_var(_h)
 
 
 def sampling(args):
@@ -43,7 +47,7 @@ def sampling(args):
     return z_mean + K.exp(z_log_var / 2) * epsilon
 
 # note that "output_shape" isn't necessary with the TensorFlow backend
-z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_var])
+z = Lambda(sampling, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
 # we instantiate these layers separately so as to reuse them later
 decoder_h = Dense(intermediate_dim, activation='relu')
@@ -60,14 +64,11 @@ yy = Input(batch_shape = (batch_size,10))
 
 def vae_loss(x, x_decoded_mean):
     xent_loss = original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
-    kl_loss = - 0.5 * K.sum(1 + z_log_var - K.square(z_mean) - K.exp(z_log_var), axis=-1)
+    kl_loss = - 0.5 * K.sum(1 + _z_log_var - K.square(_z_mean) - K.exp(_z_log_var), axis=-1)
     y_loss= 10 * objectives.categorical_crossentropy(yy, _y_decoded)
     return xent_loss + kl_loss + y_loss
 
-
-    
-    
-    
+   
 
 my_adam = optimizers.Adam(lr=learning_rate, beta_1=0.1)
 
@@ -90,6 +91,11 @@ model_weights = pickle.load(open('vaesdr', 'rb'))
 vae.set_weights(model_weights)
 
 
+
+
+
+
+
 vae.fit([x_train, y_train],[x_train,y_train],
         shuffle=True,
         nb_epoch=nb_epoch,
@@ -100,7 +106,7 @@ model_weights = vae.get_weights()
 pickle.dump((model_weights), open('vaesdr', 'wb')) 
 
 # build a model to project inputs on the latent space
-encoder = Model(x, z_mean)
+encoder = Model(x, _z_mean)
 
 # display a 2D plot of the digit classes in the latent space
 x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
@@ -112,7 +118,19 @@ ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2],line
 
 y_test_onehot = utils.to_categorical(y_test, num_classes)
 
-_,b = vae.predict([x_test, y_test_onehot],batch_size = batch_size)
+
+
+
+_h_ = h(x)
+_z_mean_ = z_mean(_h_)
+_decoder_h_ =  decoder_h(_z_mean_)
+_decoder_mean_ = decoder_mean(_decoder_h_)
+h_decoded_2_ = decoder_h_2(_z_mean_)
+_y_decoded_ = y_decoded(h_decoded_2_)
+
+vaeencoder = Model(x,[_decoder_mean_,_y_decoded_])
+x_decoded,b  = vaeencoder.predict(x_test,batch_size = batch_size)
+
 
 lll = np.zeros((10000,1))
 for i in range(10000):
@@ -145,7 +163,9 @@ figure = np.zeros((digit_size * n, digit_size * n))
 grid_x = norm.ppf(np.linspace(0.05, 0.95, n))
 grid_y = norm.ppf(np.linspace(0.05, 0.95, n))
 
-x_decoded ,_ = vae.predict([x_test, y_test_onehot],batch_size = batch_size)
+
+
+
 
 for i, yi in enumerate(grid_x):
     for j, xi in enumerate(grid_y):
@@ -159,6 +179,8 @@ for i, yi in enumerate(grid_x):
 plt.figure(figsize=(10, 10))
 plt.imshow(figure, cmap='Greys_r')
 plt.show()
+
+
 
                
                
