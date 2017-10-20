@@ -65,7 +65,7 @@ from importDatasets import importDatasetForSemisupervisedTraining
 #   num_classes) = fh_import_dataset()
 
 
-fh_import_dataset = lambda : importDatasetForSemisupervisedTraining()
+fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist')
 (dataset_name,
   x_train,
   x_test,
@@ -80,7 +80,7 @@ fh_import_dataset = lambda : importDatasetForSemisupervisedTraining()
   x_val,
   y_val,
   x_train_unlabeled,
-  y_train_unlabeled) = fh_import_dataset('')
+  y_train_unlabeled) = fh_import_dataset()
 
 batch_size = 100
 latent_dim = 3
