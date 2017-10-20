@@ -50,8 +50,8 @@ from importDatasets import importSquareAndCross
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
-fh_import_dataset = lambda : importMnist()
-# fh_import_dataset = lambda : importMnistFashion()
+# fh_import_dataset = lambda : importMnist()
+fh_import_dataset = lambda : importMnistFashion()
 
 (dataset_name,
   x_train,
@@ -142,15 +142,16 @@ pickle.dump((model_weights), open('weights_vaesdr_' + str(latent_dim) + 'd_train
 # build a model to project inputs on the latent space
 encoder = Model(x, _z_mean)
 
-# display a 2D plot of the digit classes in the latent space
-x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2], linewidth = 0, c=y_test)
-#ax.colorbar()
-#ax.show()
+# # display a 2D plot of the digit classes in the latent space
+# x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2], linewidth = 0)
+# ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2], linewidth = 0, c=y_test)
+# #ax.colorbar()
+# #ax.show()
 
-y_test_onehot = utils.to_categorical(y_test, num_classes)
+# y_test_onehot = utils.to_categorical(y_test, num_classes)
 
 
 _h_ = h(x)
@@ -174,20 +175,20 @@ generator = Model(decoder_input, _x_decoded_mean)
                                         #                              Accuracy
                                         # -------------------------------------
 
-lll = np.zeros((10000,1))
-for i in range(10000):
-    m = b[i,:].reshape(10,).tolist()
-    lll[i,0] = m.index(max(m))
+# lll = np.zeros((10000,1))
+# for i in range(10000):
+#     m = b[i,:].reshape(10,).tolist()
+#     lll[i,0] = m.index(max(m))
 
-lll
+# lll
 
-lll.reshape(1,10000)
-lll
-lll = lll.reshape(1,10000).astype('uint8')
+# lll.reshape(1,10000)
+# lll
+# lll = lll.reshape(1,10000).astype('uint8')
 
-n_error = np.count_nonzero(lll - y_test)
+# n_error = np.count_nonzero(lll - y_test)
 
-print(1- n_error/10000)
+# print(1- n_error/10000)
 
 
                                         # -------------------------------------
@@ -223,40 +224,99 @@ def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, g
     return figure
 
 
-number_of_sample_images = 15
-grid_x = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
-grid_y = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
+# number_of_sample_images = 15
+# grid_x = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
+# grid_y = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
 
-plt.figure()
+# plt.figure()
 
-ax = plt.subplot(1,3,1)
-x_samples_a = x_test
-canvas = getFigureOfSamplesForInput(x_samples_a, sample_dim, number_of_sample_images, grid_x, grid_y)
-plt.imshow(canvas, cmap='Greys_r')
-ax.set_title('Original Test Images', fontsize=8)
-ax.get_xaxis().set_visible(False)
-ax.get_yaxis().set_visible(False)
+# ax = plt.subplot(1,3,1)
+# x_samples_a = x_test
+# canvas = getFigureOfSamplesForInput(x_samples_a, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Original Test Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
 
-ax = plt.subplot(1,3,2)
-x_samples_b = x_decoded
-canvas = getFigureOfSamplesForInput(x_samples_b, sample_dim, number_of_sample_images, grid_x, grid_y)
-plt.imshow(canvas, cmap='Greys_r')
-ax.set_title('Reconstructed Test Images', fontsize=8)
-ax.get_xaxis().set_visible(False)
-ax.get_yaxis().set_visible(False)
+# ax = plt.subplot(1,3,2)
+# x_samples_b = x_decoded
+# canvas = getFigureOfSamplesForInput(x_samples_b, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Reconstructed Test Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
 
-ax = plt.subplot(1,3,3)
-x_samples_c = gmm.sample(10000)
-x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
-x_samples_c = generator.predict(x_samples_c)
-canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
-plt.imshow(canvas, cmap='Greys_r')
-ax.set_title('Generated Images', fontsize=8)
-ax.get_xaxis().set_visible(False)
-ax.get_yaxis().set_visible(False)
+# ax = plt.subplot(1,3,3)
+# x_samples_c = gmm.sample(10000)
+# x_samples_c = x_samples_c[0]
+# x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+# x_samples_c = generator.predict(x_samples_c)
+# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Generated Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
 
-plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.show()
+# # plt.savefig('figures/'+ dataset_name + '_samples.png')
+
+
+
+for i in range(100):
+  plt.figure()
+  ax = plt.subplot(1,1,1)
+  single_sample = gmm.sample(1)
+  single_sample = single_sample[0]
+  # single_sample = np.random.permutation(single_sample) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+  single_sample = generator.predict(single_sample)
+  plt.imshow(single_sample.reshape(sample_dim, sample_dim), cmap='Greys_r')
+  ax.set_title('Generated Images', fontsize=8)
+  ax.get_xaxis().set_visible(False)
+  ax.get_yaxis().set_visible(False)
+  plt.savefig('figures/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
+
+
+
+# number_of_sample_images = 10
+# grid_x = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
+# grid_y = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
+
+# plt.figure()
+
+# ax = plt.subplot(1,1,1)
+# x_samples_c = gmm.sample(100)
+# x_samples_c = x_samples_c[0]
+# # x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+# x_samples_c = generator.predict(x_samples_c)
+# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Generated Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
+
+# plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

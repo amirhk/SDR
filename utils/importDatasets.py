@@ -47,6 +47,7 @@ def importMnist():
   x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
 
   y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_train, num_classes)
 
   return ('mnist', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
