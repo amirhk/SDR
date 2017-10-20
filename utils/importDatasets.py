@@ -69,6 +69,7 @@ def importDatasetForSemisupervisedTraining(dataset_string):
 
 
 def importMnist():
+  print('[INFO] importing mnist-digits...')
   # meta
   sample_dim = 28
   sample_channels = 1
@@ -86,6 +87,8 @@ def importMnist():
 
   y_train = utils.to_categorical(y_train, num_classes)
   y_test = utils.to_categorical(y_train, num_classes)
+
+  print('[INFO] done.')
 
   return ('mnist', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
@@ -115,6 +118,12 @@ def importMnistFashion():
 
   x_train = train_meta_data[:,1:]
   x_test = test_meta_data[:,1:]
+
+  # other processing
+  x_train = x_train.astype('float32') / 255.
+  x_test = x_test.astype('float32') / 255.
+  x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+  x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
 
   y_train = train_meta_data[:,0]
   y_test = test_meta_data[:,0]
