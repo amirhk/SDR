@@ -24,6 +24,8 @@
 import numpy as np
 import sklearn
 import pickle
+import os
+import sys
 
 from keras import utils
 from keras.datasets import mnist
@@ -55,14 +57,17 @@ def importMnist():
 
 
 def importMnistFashion():
+  print('[INFO] importing mnist-fashion...')
   # meta
   sample_dim = 28
   sample_channels = 1
   original_dim = sample_channels * sample_dim ** 2
   num_classes = 10
 
-  train_file_name = '../data/fashionmnist/fashion-mnist_train.csv'
-  test_file_name = '../data/fashionmnist/fashion-mnist_test.csv'
+  print(os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv'))
+
+  train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv')
+  test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
 
   train_meta_data = np.genfromtxt(train_file_name, delimiter=',')
   test_meta_data = np.genfromtxt(test_file_name, delimiter=',')
@@ -76,6 +81,7 @@ def importMnistFashion():
   y_train = utils.to_categorical(y_train, num_classes)
   y_test = utils.to_categorical(y_test, num_classes)
 
+  print('[INFO] done.')
   return ('mnist-fashion', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
 
