@@ -68,8 +68,7 @@ from importDatasets import importDatasetForSemisupervisedTraining
 #   original_dim,
 #   num_classes) = fh_import_dataset()
 
-
-fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist')
+fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist', 500, 40000)
 (dataset_name,
   x_train,
   x_test,

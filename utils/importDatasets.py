@@ -34,7 +34,7 @@ from sklearn.datasets import fetch_olivetti_faces
 
 
 
-def importDatasetForSemisupervisedTraining(dataset_string):
+def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_training_samples, number_of_unlabeled_training_samples):
   if dataset_string == 'mnist':
     fh_import_dataset = lambda : importMnist()
   elif dataset_string == 'mnist-fashion':
@@ -50,18 +50,35 @@ def importDatasetForSemisupervisedTraining(dataset_string):
     original_dim,
     num_classes) = fh_import_dataset()
 
-  tmp_x_train_labeled = np.repeat(x_train[:1000,:], 50, axis=0)
-  tmp_y_train_labeled = np.repeat(y_train[:1000], 50, axis=0)
+  number_of_training_samples = x_train.shape[0]
+  try:
+      assert(number_of_labeled_training_samples + number_of_unlabeled_training_samples <= number_of_training_samples)
+  except AssertionError:
+      print('[ERROR] The total number of samples you\'ve requested is more than the total number of samples in ' + dataset_name + '.')
+      raise
 
-  random_ordering = np.random.permutation(50000)
+  ratio = number_of_unlabeled_training_samples / number_of_labeled_training_samples
+
+  try:
+      assert(round(ratio) == ratio)
+  except AssertionError:
+      print('[ERROR] <# unlabeled> should be divisble by <# labeled>.')
+      raise
+
+  tmp_x_train_labeled = np.repeat(x_train[:number_of_labeled_training_samples,:], ratio, axis=0)
+  tmp_y_train_labeled = np.repeat(y_train[:number_of_labeled_training_samples], ratio, axis=0)
+
+  random_ordering = np.random.permutation(int(number_of_labeled_training_samples * ratio))
   tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
   tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
 
-  tmp_x_val = x_train[1000:10000,:]
-  tmp_y_val = y_train[1000:10000]
+  # tmp_x_val = x_train[1000:10000,:]
+  # tmp_y_val = y_train[1000:10000]
+  tmp_x_val = 'jigar'
+  tmp_y_val = 'tala'
 
-  tmp_x_train_unlabeled = x_train[10000:,:]
-  tmp_y_train_unlabeled = y_train[10000:]
+  tmp_x_train_unlabeled = x_train[-number_of_unlabeled_training_samples:,:]
+  tmp_y_train_unlabeled = y_train[-number_of_unlabeled_training_samples:]
 
   return (dataset_string, x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes, tmp_x_train_labeled, tmp_y_train_labeled, tmp_x_val, tmp_y_val, tmp_x_train_unlabeled, tmp_y_train_unlabeled)
 
