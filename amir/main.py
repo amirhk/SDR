@@ -39,7 +39,11 @@ from keras.datasets import mnist
 from mpl_toolkits.mplot3d import Axes3D
 
 import sys
-sys.path.append('../utils')
+import platform
+if platform.system() == 'Windows':
+  sys.path.append('..\\..\\utils')
+elif platform.system() == 'Darwin':
+  sys.path.append('../utils')
 
 from importDatasets import importMnist
 from importDatasets import importMnistFashion
