@@ -51,13 +51,19 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
     num_classes) = fh_import_dataset()
 
   number_of_training_samples = x_train.shape[0]
+  ratio = number_of_unlabeled_training_samples / number_of_labeled_training_samples
+
   try:
       assert(number_of_labeled_training_samples + number_of_unlabeled_training_samples <= number_of_training_samples)
   except AssertionError:
       print('[ERROR] The total number of samples you\'ve requested is more than the total number of samples in ' + dataset_name + '.')
       raise
 
-  ratio = number_of_unlabeled_training_samples / number_of_labeled_training_samples
+  try:
+      assert(np.mod(number_of_labeled_training_samples, num_classes) == 0)
+  except AssertionError:
+      print('[ERROR] number_of_labeled_training_samples must be divisible by num_classes so we sample equally.')
+      raise
 
   try:
       assert(round(ratio) == ratio)
@@ -65,20 +71,101 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
       print('[ERROR] <# unlabeled> should be divisble by <# labeled>.')
       raise
 
-  tmp_x_train_labeled = np.repeat(x_train[:number_of_labeled_training_samples,:], ratio, axis=0)
-  tmp_y_train_labeled = np.repeat(y_train[:number_of_labeled_training_samples], ratio, axis=0)
+                                        # -------------------------------------
+                                        #        Separate out indices per class
+                                        # -------------------------------------
+  image_indices = {}
+  not_hot_y_train = np.argmax(y_train, axis =1)
+  for class_number in range(num_classes):
+    tmp = np.where(not_hot_y_train == class_number)[0]
+    image_indices[class_number] =  np.random.permutation(tmp)
+    print('\t[INFO] identified ' + str(image_indices[class_number].shape[0]) + ' samples of class #' + str(class_number))
+
+
+                                        # -------------------------------------
+                                        #                          Placeholders
+                                        # -------------------------------------
+
+  tmp_x_train_labeled = np.zeros((number_of_labeled_training_samples, sample_dim**2))
+  tmp_y_train_labeled = np.zeros((number_of_labeled_training_samples))
+  tmp_x_train_unlabeled = np.zeros((number_of_unlabeled_training_samples, sample_dim**2))
+  tmp_y_train_unlabeled = np.zeros((number_of_unlabeled_training_samples))
+
+
+                                        # -------------------------------------
+                                        #                   Get labeled samples
+                                        # -------------------------------------
+
+  # tmp_x_train_labeled = x_train[:number_of_labeled_training_samples,:]
+  # tmp_y_train_labeled = y_train[:number_of_labeled_training_samples]
+
+  tmp_counter = 0
+  start_index_offset = 0
+  number_of_labeled_training_samples_from_each_class = int(number_of_labeled_training_samples / 10)
+  for class_number in range(num_classes):
+    selected_sample_indices_from_this_class = image_indices[class_number][start_index_offset : start_index_offset + number_of_labeled_training_samples_from_each_class]
+
+    selected_samples_from_this_class = x_train[selected_sample_indices_from_this_class,:]
+    selected_labels_from_this_class = not_hot_y_train[selected_sample_indices_from_this_class]
+
+    assert(selected_samples_from_this_class.shape[0] == number_of_labeled_training_samples_from_each_class)
+
+    start_index = tmp_counter
+    end_index = tmp_counter + number_of_labeled_training_samples_from_each_class
+
+    tmp_x_train_labeled[start_index:end_index,:] = selected_samples_from_this_class
+    tmp_y_train_labeled[start_index:end_index] = selected_labels_from_this_class
+
+    tmp_counter += number_of_labeled_training_samples_from_each_class
+
+
+  tmp_x_train_labeled = np.repeat(tmp_x_train_labeled, ratio, axis=0)
+  tmp_y_train_labeled = np.repeat(tmp_y_train_labeled, ratio, axis=0)
 
   random_ordering = np.random.permutation(int(number_of_labeled_training_samples * ratio))
   tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
   tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
+
+
+                                        # -------------------------------------
+                                        #    DEPRECATED: Get validation samples
+                                        # -------------------------------------
 
   # tmp_x_val = x_train[1000:10000,:]
   # tmp_y_val = y_train[1000:10000]
   tmp_x_val = 'jigar'
   tmp_y_val = 'tala'
 
-  tmp_x_train_unlabeled = x_train[-number_of_unlabeled_training_samples:,:]
-  tmp_y_train_unlabeled = y_train[-number_of_unlabeled_training_samples:]
+                                        # -------------------------------------
+                                        #                 Get unlabeled samples
+                                        # -------------------------------------
+
+  # tmp_x_train_unlabeled = x_train[-number_of_unlabeled_training_samples:,:]
+  # tmp_y_train_unlabeled = y_train[-number_of_unlabeled_training_samples:]
+
+  tmp_counter = 0
+  start_index_offset = number_of_labeled_training_samples_from_each_class
+  number_of_unlabeled_training_samples_from_each_class = int(number_of_unlabeled_training_samples / 10)
+  for class_number in range(num_classes):
+    selected_sample_indices_from_this_class = image_indices[class_number][start_index_offset : start_index_offset + number_of_unlabeled_training_samples_from_each_class]
+
+    selected_samples_from_this_class = x_train[selected_sample_indices_from_this_class,:]
+    selected_labels_from_this_class = not_hot_y_train[selected_sample_indices_from_this_class]
+
+    assert(selected_samples_from_this_class.shape[0] == number_of_unlabeled_training_samples_from_each_class)
+
+    start_index = tmp_counter
+    end_index = tmp_counter + number_of_unlabeled_training_samples_from_each_class
+
+    tmp_x_train_unlabeled[start_index:end_index,:] = selected_samples_from_this_class
+    tmp_y_train_unlabeled[start_index:end_index] = selected_labels_from_this_class
+
+    tmp_counter += number_of_unlabeled_training_samples_from_each_class
+
+
+                                        # -------------------------------------
+                                        #                                Return
+                                        # -------------------------------------
 
   return (dataset_string, x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes, tmp_x_train_labeled, tmp_y_train_labeled, tmp_x_val, tmp_y_val, tmp_x_train_unlabeled, tmp_y_train_unlabeled)
 
