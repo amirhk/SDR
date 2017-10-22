@@ -58,10 +58,21 @@ from importDatasets import importDatasetForSemisupervisedTraining
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
+# fh_import_dataset = lambda : importMnist()
+# fh_import_dataset = lambda : importMnistFashion()
+
+# (dataset_name,
+#   x_train,
+#   x_test,
+#   y_train,
+#   y_test,
+#   sample_dim,
+#   sample_channels,
+#   original_dim,
+#   num_classes) = fh_import_dataset()
 
 
-
-fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',100,10000)
+fh_import_dataset = lambda : importMnist()
 (dataset_name,
   x_train,
   x_test,
@@ -70,27 +81,22 @@ fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',100,
   sample_dim,
   sample_channels,
   original_dim,
-  num_classes,
-  x_train_labeled,
-  y_train_labeled,
-  x_val,
-  y_val,
-  x_train_unlabeled,
-  y_train_unlabeled) = fh_import_dataset()
+  num_classes) = fh_import_dataset()
 
 
-x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
+x_total = np.concatenate([x_train,x_train],1)
+y_total = np.concatenate([y_train,y_train],1)
 x_total_test = np.concatenate([x_test,x_test],1)
 
 num_classes = 10
 
 batch_size = 100
-latent_dim = 15
-epochs = 1000
+latent_dim = 2
+epochs = 20
 intermediate_dim = 500
 epsilon_std = 1.0
-learning_rate = 0.00003
-intermediate_label_layer  = 100
+learning_rate = 0.005
+
 
 # -----------------------------------------------------------------------------
 #                                                                   Build Model
@@ -124,7 +130,7 @@ def sampling_1(args):
                               stddev=epsilon_std)
     return z_mean[:,1,:] + K.exp(z_log_var[:,1,:] / 2) * epsilon 
     
-z_l = Lambda(sampling_1, output_shape=(latent_dim,))([_z_mean, _z_log_var])
+z_l = Lambda(sampling, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
 def Concat_Latent(args):
     
@@ -132,8 +138,8 @@ def Concat_Latent(args):
     
     return tf.concat([z_u,z_l],1)
 
-auxiliary_layer = Lambda(Concat_Latent)([z_u,z_l])
-z = Reshape((2,latent_dim))(auxiliary_layer)
+Auxillary_layer = Lambda(Concat_Latent)([z_u,z_l])
+z = Reshape((2,latent_dim))(Auxillary_layer)
 
 # we instantiate these layers separately so as to reuse them later
 decoder_h = Dense(intermediate_dim, activation='relu')
@@ -143,18 +149,23 @@ h_decoded = decoder_h(z)
 x_decoded_mean_reshaped = decoder_mean_reshaped(h_decoded)
 x_decoded_mean = decoded_mean(x_decoded_mean_reshaped)
 
-decoder_h_2 = Dense(intermediate_label_layer, activation='relu')
-y_decoded = Dense(num_classes, activation='sigmoid')
-h_decoded_2 = decoder_h_2(z_l)
-_y_decoded = y_decoded(h_decoded_2)
+decoder_h_2 = Dense(intermediate_dim, activation='relu')
+y_decoded_reshaped = Dense(10, activation='sigmoid')
+y_decoded = Reshape((20,))
+h_decoded_2 = decoder_h_2(z)
+_y_decoded_reshaped = y_decoded_reshaped(h_decoded_2)
+_y_decoded = y_decoded(_y_decoded_reshaped)
 
-yy = Input(batch_shape = (batch_size,num_classes))
+
+yy = Input(batch_shape = (batch_size,20))
+
+
 
 def vae_loss(x, x_decoded_mean):
     xent_loss = 2*original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
     kl_loss_u = - 0.5 * K.sum(1 + _z_log_var[:,0,:] - K.square(_z_mean[:,0,:]) - K.exp(_z_log_var[:,0,:]), axis=-1)
     kl_loss_l = - 0.5 * K.sum(1 + _z_log_var[:,1,:] - K.square(_z_mean[:,1,:]) - K.exp(_z_log_var[:,1,:]), axis=-1)
-    y_loss= num_classes * objectives.categorical_crossentropy(yy, _y_decoded)
+    y_loss= 20 * objectives.mse(yy, _y_decoded)
     return xent_loss + kl_loss_u +kl_loss_l + y_loss
 
 my_adam = optimizers.Adam(lr=learning_rate, beta_1=0.1)
@@ -170,7 +181,7 @@ vae.compile(optimizer=my_adam, loss=vae_loss)
 #model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
 #vae.set_weights(model_weights)
 
-vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
+vae.fit([x_total, y_total],[x_total,y_total],#x_total,x_total,
         shuffle=True,
         epochs=epochs,
         batch_size=batch_size)
@@ -230,8 +241,8 @@ x_decoded, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
 # build a digit generator that can sample from the learned distribution
 decoder_input = Input(shape=(latent_dim,))
 _h_decoded = decoder_h(decoder_input)
-_x_decoded_mean_reshaped = decoder_mean_reshaped(_h_decoded)
-generator = Model(decoder_input, _x_decoded_mean_reshaped)
+_x_decoded_mean = decoder_mean(_h_decoded)
+generator = Model(decoder_input, _x_decoded_mean)
 
 
                                         # -------------------------------------
@@ -250,12 +261,12 @@ print(1- n_error/10000)
                                         # -------------------------------------
 
 # display a 2D plot of the digit classes in the latent space
-x_train_encoded = encoder.predict(x_total, batch_size=batch_size)
+x_train_encoded = encoder.predict(x_train, batch_size=batch_size)
 
 n_components = num_classes
 cv_type = 'full'
 gmm = mixture.GaussianMixture(n_components=n_components, covariance_type=cv_type)
-gmm.fit(x_train_encoded[:,0,:])
+gmm.fit(x_train_encoded)
 
 
 
@@ -276,7 +287,7 @@ def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, g
     return figure
 
 
-number_of_sample_images = num_classes
+number_of_sample_images = 15
 grid_x = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
 grid_y = norm.ppf(np.linspace(0.05, 0.95, number_of_sample_images))
 
@@ -291,7 +302,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 ax = plt.subplot(1,3,2)
-x_samples_b = x_decoded[:,:784]
+x_samples_b = x_decoded
 canvas = getFigureOfSamplesForInput(x_samples_b, sample_dim, number_of_sample_images, grid_x, grid_y)
 plt.imshow(canvas, cmap='Greys_r')
 ax.set_title('Reconstructed Test Images', fontsize=8)
@@ -299,10 +310,8 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 ax = plt.subplot(1,3,3)
-#x_samples_c = gmm.sample(10000)
-x_samples_c = gmm.sample(number_of_sample_images ** 2)
-x_samples_c = x_samples_c[0]
-#x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+x_samples_c = gmm.sample(10000)
+x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
 x_samples_c = generator.predict(x_samples_c)
 canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
 plt.imshow(canvas, cmap='Greys_r')
@@ -313,19 +322,8 @@ ax.get_yaxis().set_visible(False)
 plt.show()
 # plt.savefig('figures/'+ dataset_name + '_samples.png')
 
-# for i in range(100):
-#   plt.figure()
-#   ax = plt.subplot(1,1,1)
-#   single_sample = gmm.sample(1)
-#   single_sample = single_sample[0]
-#   # single_sample = np.random.permutation(single_sample) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
-#   single_sample = generator.predict(single_sample)
-#   plt.imshow(single_sample.reshape(sample_dim, sample_dim), cmap='Greys_r')
-#   ax.set_title('Generated Images', fontsize=8)
-#   ax.get_xaxis().set_visible(False)
-#   ax.get_yaxis().set_visible(False)
-#   plt.savefig('figures/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
-#
+
+
 
 
 
