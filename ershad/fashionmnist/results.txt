@@ -1,0 +1,17 @@
+100 epochs
+
+latent dim = 10
+
+best accuracy = 89.8%
+
+
+latent dim = 3
+
+best accuracy = 87.7%
+
+
+latent dim = 2 
+
+
+best accuracy = 84.87%
+
