@@ -167,6 +167,9 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
                                         #                                Return
                                         # -------------------------------------
 
+  tmp_y_train_labeled = utils.to_categorical(tmp_y_train_labeled, num_classes)
+  tmp_y_train_unlabeled = utils.to_categorical(tmp_y_train_unlabeled, num_classes)
+
   return (dataset_string, x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes, tmp_x_train_labeled, tmp_y_train_labeled, tmp_x_val, tmp_y_val, tmp_x_train_unlabeled, tmp_y_train_unlabeled)
 
 
