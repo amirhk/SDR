@@ -38,6 +38,7 @@ from keras import objectives , utils,optimizers
 from keras.datasets import mnist
 from mpl_toolkits.mplot3d import Axes3D
 import tensorflow as tf
+from keras.callbacks import Callback
 
 
 import sys
@@ -167,17 +168,63 @@ vae.compile(optimizer=my_adam, loss=vae_loss)
 #                                                                   Train Model
 # -----------------------------------------------------------------------------
 
-#model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
-#vae.set_weights(model_weights)
+
+
+_x_reshaped_ = x_reshaped(x)
+_h_ = h(_x_reshaped_)
+_z_mean_ = z_mean(_h_)
+_decoder_h_ =  decoder_h(_z_mean_)
+_decoder_mean_reshaped = decoder_mean_reshaped(_decoder_h_)
+_decoder_mean_ = decoded_mean(_decoder_mean_reshaped)
+
+def take_one_dim(args):
+    ZZZ = args
+    return ZZZ[:,1,:]
+     
+z_aux = Lambda(take_one_dim, output_shape=(latent_dim,))(_z_mean_)
+h_decoded_2_ = decoder_h_2(z_aux)
+_y_decoded_ = y_decoded(h_decoded_2_)
+
+vaeencoder = Model(inputs = x,outputs=  [_decoder_mean_,_y_decoded_])
+
+_, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
+
+y_test_label = np.argmax(y_test,axis =1)
+
+Accuracy = np.zeros((epochs,1))
+ii=0
+pickle.dump((ii),open('counter','wb'))
+class ACCURACY(Callback):
+
+    def on_epoch_end(self,batch,logs = {}):
+        ii= pickle.load(open('counter','rb'))
+        ii= ii+1
+        pickle.dump((ii),open('counter','wb'))
+        _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
+        Accuracy[ii,0] 
+        
+        lll = np.argmax(b,axis =1)
+        n_error = np.count_nonzero(lll - y_test_label)
+        ACC= 1- n_error/10000
+        Accuracy[ii,0] = ACC
+        print('\n accuracy = ' , ACC)
+        
+        
+
+accuracy = ACCURACY()
+
+model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+vae.set_weights(model_weights)
 
 vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
         shuffle=True,
         epochs=epochs,
-        batch_size=batch_size)
+        batch_size=batch_size,
+        callbacks = [accuracy])
+
 
 model_weights = vae.get_weights()
 pickle.dump((model_weights), open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
-
 
 # -----------------------------------------------------------------------------
 #                                                                      Analysis
@@ -188,7 +235,7 @@ encoder = Model(x, _z_mean)
 
 # display a 3D plot of the digit classes in the latent space
 x_test_encoded = encoder.predict(x_total_test, batch_size=batch_size)
-y_test_label = np.argmax(y_test,axis =1)
+
 
 #fig = plt.figure()
 #ax = fig.add_subplot(111, projection='3d')
@@ -209,22 +256,6 @@ plt.show()
 
 
 
-_x_reshaped_ = x_reshaped(x)
-_h_ = h(_x_reshaped_)
-_z_mean_ = z_mean(_h_)
-_decoder_h_ =  decoder_h(_z_mean_)
-_decoder_mean_reshaped = decoder_mean_reshaped(_decoder_h_)
-_decoder_mean_ = decoded_mean(_decoder_mean_reshaped)
-
-def take_one_dim(args):
-    ZZZ = args
-    return ZZZ[:,1,:]
-     
-z_aux = Lambda(take_one_dim, output_shape=(latent_dim,))(_z_mean_)
-h_decoded_2_ = decoder_h_2(z_aux)
-_y_decoded_ = y_decoded(h_decoded_2_)
-
-vaeencoder = Model(inputs = x,outputs=  [_decoder_mean_,_y_decoded_])
 x_decoded, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
 
 # build a digit generator that can sample from the learned distribution
@@ -239,10 +270,7 @@ generator = Model(decoder_input, _x_decoded_mean_reshaped)
 
     
 
-lll = np.argmax(b,axis =1)
-n_error = np.count_nonzero(lll - y_test_label)
 
-print(1- n_error/10000)
 
 
                                         # -------------------------------------
