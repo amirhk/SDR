@@ -81,7 +81,7 @@ x_total_test = np.concatenate([x_test,x_test],1)
 
 batch_size = 100
 latent_dim = 15
-epochs = 1000
+epochs = 10
 intermediate_dim = 500
 epsilon_std = 1.0
 learning_rate = 0.00003
@@ -191,12 +191,12 @@ class ACCURACY(Callback):
         ii= ii + 1
         pickle.dump((ii),open('counter', 'wb'))
         _, b  = vaeencoder.predict(x_total_test, batch_size = batch_size)
-        Accuracy[ii, 0]
+        Accuracy[ii-1, 0]
 
         lll = np.argmax(b, axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
         ACC = 1 - n_error / 10000
-        Accuracy[ii,0] = ACC
+        Accuracy[ii-1,0] = ACC
         print('\n accuracy = ', ACC)
 
 accuracy = ACCURACY()
@@ -209,7 +209,6 @@ vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
         epochs=epochs,
         batch_size=batch_size,
         callbacks = [accuracy])
-
 
 model_weights = vae.get_weights()
 pickle.dump((model_weights), open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
