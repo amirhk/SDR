@@ -205,7 +205,7 @@ class Accuracy(Callback):
 
 accuracy = Accuracy()
 
-model_weights = pickle.load(open('saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+model_weights = pickle.load(open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
 vae.set_weights(model_weights)
 
 vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
@@ -216,7 +216,7 @@ vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
 
 
 model_weights = vae.get_weights()
-pickle.dump((model_weights), open('saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
+pickle.dump((model_weights), open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
 
 # -----------------------------------------------------------------------------
 #                                                                      Analysis
