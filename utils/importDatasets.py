@@ -125,6 +125,9 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
     tmp_counter += number_of_labeled_training_samples_from_each_class
 
 
+  generateAndLoadSamplesSimilarTo(X_train, y_train, 'mnist', 1)
+
+
   tmp_x_train_labeled = np.repeat(tmp_x_train_labeled, ratio, axis=0)
   tmp_y_train_labeled = np.repeat(tmp_y_train_labeled, ratio, axis=0)
 
