@@ -76,11 +76,8 @@ fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',100,
   x_train_unlabeled,
   y_train_unlabeled) = fh_import_dataset()
 
-
 x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
 x_total_test = np.concatenate([x_test,x_test],1)
-
-num_classes = 10
 
 batch_size = 100
 latent_dim = 15
@@ -184,26 +181,25 @@ _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
 
 y_test_label = np.argmax(y_test,axis =1)
 
-accuracy = np.zeros((epochs,1))
+Accuracy = np.zeros((epochs,1))
 ii=0
 pickle.dump((ii),open('counter','wb'))
-class Accuracy(Callback):
+class ACCURACY(Callback):
 
-    def on_epoch_end(self, batch, logs = {}):
-        ii = pickle.load(open('counter', 'rb'))
-        ii = ii+1
-        pickle.dump((ii), open('counter', 'wb'))
-        _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
-        accuracy[ii,0]
+    def on_epoch_end(self,batch,logs = {}):
+        ii= pickle.load(open('counter', 'rb'))
+        ii= ii + 1
+        pickle.dump((ii),open('counter', 'wb'))
+        _, b  = vaeencoder.predict(x_total_test, batch_size = batch_size)
+        Accuracy[ii, 0]
 
-        lll = np.argmax(b,axis =1)
+        lll = np.argmax(b, axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
-        ACC = 1- n_error / 10000
-        accuracy[ii,0] = ACC
+        ACC = 1 - n_error / 10000
+        Accuracy[ii,0] = ACC
         print('\n accuracy = ', ACC)
 
-
-accuracy = Accuracy()
+accuracy = ACCURACY()
 
 model_weights = pickle.load(open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
 vae.set_weights(model_weights)
