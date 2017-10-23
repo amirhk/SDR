@@ -144,11 +144,11 @@ _y_decoded = y_decoded(h_decoded_2)
 yy = Input(batch_shape = (batch_size,num_classes))
 
 def vae_loss(x, x_decoded_mean):
-    xent_loss = 2*original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
+    x_ent_loss = 2*original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
     kl_loss_u = - 0.5 * K.sum(1 + _z_log_var[:,0,:] - K.square(_z_mean[:,0,:]) - K.exp(_z_log_var[:,0,:]), axis=-1)
     kl_loss_l = - 0.5 * K.sum(1 + _z_log_var[:,1,:] - K.square(_z_mean[:,1,:]) - K.exp(_z_log_var[:,1,:]), axis=-1)
     y_loss= num_classes * objectives.categorical_crossentropy(yy, _y_decoded)
-    return xent_loss + kl_loss_u +kl_loss_l + y_loss
+    return x_ent_loss + y_loss + kl_loss_u + kl_loss_l
 
 my_adam = optimizers.Adam(lr=learning_rate, beta_1=0.1)
 

@@ -31,14 +31,14 @@ from keras import utils
 from keras.datasets import mnist
 from sklearn.datasets import fetch_olivetti_faces
 
-import sys
-import platform
-if platform.system() == 'Windows':
-  sys.path.append('..\\..\\utils')
-elif platform.system() == 'Linux' or platform.system() == 'Darwin':
-  sys.path.append('../../utils')
+# import sys
+# import platform
+# if platform.system() == 'Windows':
+#   sys.path.append('..\\..\\utils')
+# elif platform.system() == 'Linux' or platform.system() == 'Darwin':
+#   sys.path.append('../../utils')
 
-from generationUtils import generateAndLoadSimilarSamplesToData
+# from generationUtils import generateAndLoadSimilarSamplesToData
 
 def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_training_samples, number_of_unlabeled_training_samples):
   if dataset_string == 'mnist':
@@ -125,7 +125,7 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
     tmp_counter += number_of_labeled_training_samples_from_each_class
 
 
-  generateAndLoadSamplesSimilarTo(X_train, y_train, 'mnist', 1)
+  # generateAndLoadSamplesSimilarTo(X_train, y_train, 'mnist', 1)
 
 
   tmp_x_train_labeled = np.repeat(tmp_x_train_labeled, ratio, axis=0)
