@@ -40,7 +40,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import tensorflow as tf
 from keras.callbacks import Callback
 
-
+import os
 import sys
 import platform
 if platform.system() == 'Windows':
@@ -59,7 +59,7 @@ from importDatasets import importDatasetForSemisupervisedTraining
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
-fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',100,10000)
+fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',25000,25000)
 (dataset_name,
   x_train,
   x_test,
@@ -80,22 +80,22 @@ x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
 x_total_test = np.concatenate([x_test,x_test],1)
 
 batch_size = 100
-latent_dim = 15
-epochs = 10
-intermediate_dim = 500
+latent_dim = 2
+epochs = 100
 epsilon_std = 1.0
 learning_rate = 0.00003
-intermediate_label_layer  = 100
+intermediate_recon_layer_dim = 500
+intermediate_label_layer_dim = 10
 
 # -----------------------------------------------------------------------------
 #                                                                   Build Model
 # -----------------------------------------------------------------------------
 
-x = Input(batch_shape=(batch_size, 2*original_dim))
+x = Input(batch_shape=(batch_size, 2 * original_dim))
 
 x_reshaped = Reshape((2,original_dim))
 
-h = Dense(intermediate_dim, activation='relu')
+h = Dense(intermediate_recon_layer_dim, activation='relu')
 z_mean = Dense(latent_dim)
 z_log_var = Dense(latent_dim)
 
@@ -129,14 +129,14 @@ auxiliary_layer = Lambda(concat_latent)([z_u,z_l])
 z = Reshape((2,latent_dim))(auxiliary_layer)
 
 # we instantiate these layers separately so as to reuse them later
-decoder_h = Dense(intermediate_dim, activation='relu')
+decoder_h = Dense(intermediate_recon_layer_dim, activation='relu')
 decoder_mean_reshaped = Dense(original_dim, activation='sigmoid')
 decoded_mean = Reshape((2*original_dim,))
 h_decoded = decoder_h(z)
 x_decoded_mean_reshaped = decoder_mean_reshaped(h_decoded)
 x_decoded_mean = decoded_mean(x_decoded_mean_reshaped)
 
-decoder_h_2 = Dense(intermediate_label_layer, activation='relu')
+decoder_h_2 = Dense(intermediate_label_layer_dim, activation='relu')
 y_decoded = Dense(num_classes, activation='sigmoid')
 h_decoded_2 = decoder_h_2(z_l)
 _y_decoded = y_decoded(h_decoded_2)
@@ -201,8 +201,14 @@ class ACCURACY(Callback):
 
 accuracy = ACCURACY()
 
-model_weights = pickle.load(open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
-vae.set_weights(model_weights)
+weights_file_name = '../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name
+if os.path.isfile(weights_file_name):
+  print('[INFO] saved weights file found; loading...')
+  model_weights = pickle.load(open(weights_file_name, 'rb'))
+  vae.set_weights(model_weights)
+else:
+  print('[INFO] NO saved weights file found; starting from scratch...')
+
 
 vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
         shuffle=True,
@@ -211,7 +217,7 @@ vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
         callbacks = [accuracy])
 
 model_weights = vae.get_weights()
-pickle.dump((model_weights), open('../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
+pickle.dump((model_weights), open(weights_file_name, 'wb'))
 
 # -----------------------------------------------------------------------------
 #                                                                      Analysis
@@ -237,7 +243,8 @@ x_test_encoded = encoder.predict(x_total_test, batch_size=batch_size)
 
 plt.scatter(x_test_encoded[:, 0,0], x_test_encoded[:, 0,1], linewidth = 0, c=y_test_label)
 plt.colorbar()
-plt.show()
+# plt.show()
+plt.savefig('../images/'+ dataset_name + '_latent_space.png')
 
 #y_test_onehot = utils.to_categorical(y_test, num_classes)
 
@@ -317,7 +324,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 # plt.show()
-plt.savefig('images/'+ dataset_name + '_generated_samples.png')
+plt.savefig('../images/'+ dataset_name + '_generated_samples.png')
 
 # for i in range(100):
 #   plt.figure()
@@ -331,7 +338,7 @@ plt.savefig('images/'+ dataset_name + '_generated_samples.png')
 #   ax.get_xaxis().set_visible(False)
 #   ax.get_yaxis().set_visible(False)
 #   plt.savefig('images/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
-#
+
 
 
 
