@@ -45,8 +45,8 @@ import sys
 import platform
 if platform.system() == 'Windows':
   sys.path.append('..\\..\\utils')
-elif platform.system() == 'Darwin':
-  sys.path.append('../utils')
+elif platform.system() == 'Linux' or platform.system() == 'Darwin':
+  sys.path.append('../../utils')
 
 from importDatasets import importMnist
 from importDatasets import importMnistFashion
@@ -58,9 +58,6 @@ from importDatasets import importDatasetForSemisupervisedTraining
 # -----------------------------------------------------------------------------
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
-
-
-
 
 fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',100,10000)
 (dataset_name,
@@ -115,25 +112,23 @@ def sampling(args):
     z_mean, z_log_var = args
     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
                               stddev=epsilon_std)
-    return z_mean[:,0,:] + K.exp(z_log_var[:,0,:] / 2) * epsilon 
-    
+    return z_mean[:,0,:] + K.exp(z_log_var[:,0,:] / 2) * epsilon
+
 z_u = Lambda(sampling, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
 def sampling_1(args):
     z_mean, z_log_var = args
     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
                               stddev=epsilon_std)
-    return z_mean[:,1,:] + K.exp(z_log_var[:,1,:] / 2) * epsilon 
-    
+    return z_mean[:,1,:] + K.exp(z_log_var[:,1,:] / 2) * epsilon
+
 z_l = Lambda(sampling_1, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
-def Concat_Latent(args):
-    
+def concat_latent(args):
     z_u,z_l = args
-    
     return tf.concat([z_u,z_l],1)
 
-auxiliary_layer = Lambda(Concat_Latent)([z_u,z_l])
+auxiliary_layer = Lambda(concat_latent)([z_u,z_l])
 z = Reshape((2,latent_dim))(auxiliary_layer)
 
 # we instantiate these layers separately so as to reuse them later
@@ -168,8 +163,6 @@ vae.compile(optimizer=my_adam, loss=vae_loss)
 #                                                                   Train Model
 # -----------------------------------------------------------------------------
 
-
-
 _x_reshaped_ = x_reshaped(x)
 _h_ = h(_x_reshaped_)
 _z_mean_ = z_mean(_h_)
@@ -180,7 +173,7 @@ _decoder_mean_ = decoded_mean(_decoder_mean_reshaped)
 def take_one_dim(args):
     ZZZ = args
     return ZZZ[:,1,:]
-     
+
 z_aux = Lambda(take_one_dim, output_shape=(latent_dim,))(_z_mean_)
 h_decoded_2_ = decoder_h_2(z_aux)
 _y_decoded_ = y_decoded(h_decoded_2_)
@@ -191,29 +184,28 @@ _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
 
 y_test_label = np.argmax(y_test,axis =1)
 
-Accuracy = np.zeros((epochs,1))
+accuracy = np.zeros((epochs,1))
 ii=0
 pickle.dump((ii),open('counter','wb'))
-class ACCURACY(Callback):
+class Accuracy(Callback):
 
-    def on_epoch_end(self,batch,logs = {}):
-        ii= pickle.load(open('counter','rb'))
-        ii= ii+1
-        pickle.dump((ii),open('counter','wb'))
+    def on_epoch_end(self, batch, logs = {}):
+        ii = pickle.load(open('counter', 'rb'))
+        ii = ii+1
+        pickle.dump((ii), open('counter', 'wb'))
         _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
-        Accuracy[ii,0] 
-        
+        accuracy[ii,0]
+
         lll = np.argmax(b,axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
-        ACC= 1- n_error/10000
-        Accuracy[ii,0] = ACC
-        print('\n accuracy = ' , ACC)
-        
-        
+        ACC = 1- n_error / 10000
+        accuracy[ii,0] = ACC
+        print('\n accuracy = ', ACC)
 
-accuracy = ACCURACY()
 
-model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+accuracy = Accuracy()
+
+model_weights = pickle.load(open('saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
 vae.set_weights(model_weights)
 
 vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
@@ -224,7 +216,7 @@ vae.fit([x_total, y_train_labeled],[x_total,y_train_labeled],#x_total,x_total,
 
 
 model_weights = vae.get_weights()
-pickle.dump((model_weights), open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
+pickle.dump((model_weights), open('saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
 
 # -----------------------------------------------------------------------------
 #                                                                      Analysis
@@ -266,14 +258,6 @@ generator = Model(decoder_input, _x_decoded_mean_reshaped)
 
 
                                         # -------------------------------------
-                                        #                              Accuracy
-
-    
-
-
-
-
-                                        # -------------------------------------
                                         #                               Fit GMM
                                         # -------------------------------------
 
@@ -284,7 +268,6 @@ n_components = num_classes
 cv_type = 'full'
 gmm = mixture.GaussianMixture(n_components=n_components, covariance_type=cv_type)
 gmm.fit(x_train_encoded[:,0,:])
-
 
 
 
