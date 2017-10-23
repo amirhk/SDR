@@ -108,7 +108,7 @@ plt.figure(figsize=(6, 6))
 plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
 plt.colorbar()
 # plt.show()
-plt.savefig('figures/latent_space_' + dataset_name + '_epoch_' + str(99) + '.png')
+plt.savefig('images/latent_space_' + dataset_name + '_epoch_' + str(99) + '.png')
 
 
 # build a sample generator that can sample from the learned distribution
@@ -138,6 +138,6 @@ for i, yi in enumerate(grid_x):
 plt.figure(figsize=(10, 10))
 plt.imshow(figure, cmap='Greys_r')
 # plt.show()
-plt.savefig('figures/manifold_' + dataset_name + '_epoch_' + str(99) + '.png')
+plt.savefig('images/manifold_' + dataset_name + '_epoch_' + str(99) + '.png')
 
 

@@ -316,8 +316,8 @@ ax.set_title('Generated Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
-plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.show()
+plt.savefig('images/'+ dataset_name + '_generated_samples.png')
 
 # for i in range(100):
 #   plt.figure()
@@ -330,7 +330,7 @@ plt.show()
 #   ax.set_title('Generated Images', fontsize=8)
 #   ax.get_xaxis().set_visible(False)
 #   ax.get_yaxis().set_visible(False)
-#   plt.savefig('figures/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
+#   plt.savefig('images/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
 #
 
 

@@ -109,7 +109,7 @@ for i in range(tmp):
     ax.get_yaxis().set_visible(False)
 
 
-plt.savefig('figures/samples.png')
+plt.savefig('images/samples.png')
 
 
 
@@ -210,7 +210,7 @@ plt.figure(figsize=(6, 6))
 plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
 plt.colorbar()
 # plt.show()
-plt.savefig('figures/latent_space_' + str(0) + '.png')
+plt.savefig('images/latent_space_' + str(0) + '.png')
 
 
 # display a 2D manifold of the digits
@@ -237,7 +237,7 @@ for i, yi in enumerate(grid_x):
 plt.figure(figsize=(10, 10))
 plt.imshow(figure, cmap='Greys_r')
 # plt.show()
-plt.savefig('figures/manifold_' + str(0) + '.png')
+plt.savefig('images/manifold_' + str(0) + '.png')
 
 
 
@@ -271,7 +271,7 @@ for kk in range(int(epochs / save_interval)):
     plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
     plt.colorbar()
     # plt.show()
-    plt.savefig('figures/latent_space_' + str((kk+1)*save_interval) + '.png')
+    plt.savefig('images/latent_space_' + str((kk+1)*save_interval) + '.png')
 
 
     # display a 2D manifold of the digits
@@ -298,6 +298,6 @@ for kk in range(int(epochs / save_interval)):
     plt.figure(figsize=(10, 10))
     plt.imshow(figure, cmap='Greys_r')
     # plt.show()
-    plt.savefig('figures/manifold_' + str((kk+1)*save_interval) + '.png')
+    plt.savefig('images/manifold_' + str((kk+1)*save_interval) + '.png')
 
 

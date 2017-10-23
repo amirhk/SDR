@@ -254,7 +254,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.savefig('images/'+ dataset_name + '_samples.png')
 
 
 

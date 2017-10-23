@@ -14,5 +14,5 @@ def saveSamples(dataset_name, x_train, sample_dim):
       ax.get_yaxis().set_visible(False)
 
 
-  plt.savefig('figures/'+ dataset_name + '_samples.png')
+  plt.savefig('images/'+ dataset_name + '_samples.png')
 

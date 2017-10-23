@@ -120,22 +120,22 @@ def sampling(args):
     z_mean, z_log_var = args
     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
                               stddev=epsilon_std)
-    return z_mean[:,0,:] + K.exp(z_log_var[:,0,:] / 2) * epsilon 
-    
+    return z_mean[:,0,:] + K.exp(z_log_var[:,0,:] / 2) * epsilon
+
 z_u = Lambda(sampling, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
 def sampling_1(args):
     z_mean, z_log_var = args
     epsilon = K.random_normal(shape=(batch_size, latent_dim), mean=0.,
                               stddev=epsilon_std)
-    return z_mean[:,1,:] + K.exp(z_log_var[:,1,:] / 2) * epsilon 
-    
+    return z_mean[:,1,:] + K.exp(z_log_var[:,1,:] / 2) * epsilon
+
 z_l = Lambda(sampling, output_shape=(latent_dim,))([_z_mean, _z_log_var])
 
 def Concat_Latent(args):
-    
+
     z_u,z_l = args
-    
+
     return tf.concat([z_u,z_l],1)
 
 Auxillary_layer = Lambda(Concat_Latent)([z_u,z_l])
@@ -230,7 +230,7 @@ _decoder_mean_ = decoded_mean(_decoder_mean_reshaped)
 def take_one_dim(args):
     ZZZ = args
     return ZZZ[:,1,:]
-     
+
 z_aux = Lambda(take_one_dim, output_shape=(latent_dim,))(_z_mean_)
 h_decoded_2_ = decoder_h_2(z_aux)
 _y_decoded_ = y_decoded(h_decoded_2_)
@@ -248,7 +248,7 @@ generator = Model(decoder_input, _x_decoded_mean)
                                         # -------------------------------------
                                         #                              Accuracy
 
-    
+
 
 lll = np.argmax(b,axis =1)
 n_error = np.count_nonzero(lll - y_test_label)
@@ -320,7 +320,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.savefig('images/'+ dataset_name + '_samples.png')
 
 
 

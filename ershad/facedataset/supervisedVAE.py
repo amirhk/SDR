@@ -123,7 +123,7 @@ def vae_loss(x, x_decoded_mean):
     # return 1
 
 
-    
+
 
 my_adam = optimizers.Adam(lr=learning_rate, beta_1=0.1)
 
@@ -162,7 +162,7 @@ generator = Model(decoder_input, _x_decoded_mean)
 # plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
 # plt.colorbar()
 # # plt.show()
-# plt.savefig('figures/latent_space_' + str(0) + '.png')
+# plt.savefig('images/latent_space_' + str(0) + '.png')
 
 
 # # display a 2D manifold of the digits
@@ -189,7 +189,7 @@ generator = Model(decoder_input, _x_decoded_mean)
 # plt.figure(figsize=(10, 10))
 # plt.imshow(figure, cmap='Greys_r')
 # # plt.show()
-# plt.savefig('figures/manifold_' + str(0) + '.png')
+# plt.savefig('images/manifold_' + str(0) + '.png')
 
 
 
@@ -220,16 +220,16 @@ vae.fit([x_train, y_train],[x_train, y_train],
         epochs=epochs,
         batch_size=batch_size) # ,
             # callbacks=[batch_print_callback])
-    
+
 
 a,b = vae.predict([x_train,y_train],batch_size = batch_size)
-imshow(a[1,:].reshape((64,64)),cmap = 'Greys_r') 
+imshow(a[1,:].reshape((64,64)),cmap = 'Greys_r')
 
 plt.figure(figsize=(6, 6))
-imshow(x_train[1,:].reshape((64,64)),cmap = 'Greys_r') 
+imshow(x_train[1,:].reshape((64,64)),cmap = 'Greys_r')
 
 model_weights = vae.get_weights()
-pickle.dump((model_weights), open('vaesdr', 'wb'))   
+pickle.dump((model_weights), open('vaesdr', 'wb'))
 #
 #    # display a 2D plot of the digit classes in the latent space
 ##    x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
@@ -237,7 +237,7 @@ pickle.dump((model_weights), open('vaesdr', 'wb'))
 ##    plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
 ##    plt.colorbar()
 #    # plt.show()
-#    plt.savefig('figures/latent_space_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
+#    plt.savefig('images/latent_space_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
 #
 #
 #    # display a 2D manifold of the digits
@@ -264,6 +264,6 @@ pickle.dump((model_weights), open('vaesdr', 'wb'))
 #    plt.figure(figsize=(10, 10))
 #    plt.imshow(figure, cmap='Greys_r')
 #    # plt.show()
-#    plt.savefig('figures/manifold_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
+#    plt.savefig('images/manifold_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
 #
 #

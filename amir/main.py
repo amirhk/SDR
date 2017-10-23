@@ -42,10 +42,8 @@ import sys
 import platform
 if platform.system() == 'Windows':
   sys.path.append('..\\..\\utils')
-elif platform.system() == 'Darwin':
-  sys.path.append('../utils')
-elif platform.system() == 'Linux':
-  sys.path.append('../utils')
+elif platform.system() == 'Linux' or platform.system() == 'Darwin':
+  sys.path.append('../../utils')
 
 from importDatasets import importMnist
 from importDatasets import importMnistFashion
@@ -362,7 +360,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.savefig('images/'+ dataset_name + '_generated_samples.png')
 
 
 
@@ -377,7 +375,7 @@ plt.show()
 #   ax.set_title('Generated Images', fontsize=8)
 #   ax.get_xaxis().set_visible(False)
 #   ax.get_yaxis().set_visible(False)
-#   plt.savefig('figures/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
+#   plt.savefig('images/tmp/'+ dataset_name + '_sample_' + str(i+1) + '.png')
 
 
 

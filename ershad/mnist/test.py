@@ -214,8 +214,8 @@ for i in range(10000):
     m_real = y_test[i,:].reshape(10,).tolist()
     lll[i,0] = m.index(max(m))
     lll_real[i,0] = m_real.index(max(m_real))
-    
-    
+
+
 
 lll = lll.reshape(1,10000).astype('uint8')
 lll_real = lll_real.reshape(1,10000).astype('uint8')
@@ -288,7 +288,7 @@ ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
 plt.show()
-# plt.savefig('figures/'+ dataset_name + '_samples.png')
+# plt.savefig('images/'+ dataset_name + '_samples.png')
 
 
 

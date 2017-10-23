@@ -165,7 +165,7 @@ for kk in range(int(epochs / save_interval)):
     plt.figure(figsize=(6, 6))
     plt.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], c=y_test)
     plt.colorbar()
-    plt.savefig('figures/latent_space_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
+    plt.savefig('images/latent_space_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
 
 
     # display a 2D manifold of the digits
@@ -191,6 +191,6 @@ for kk in range(int(epochs / save_interval)):
 
     plt.figure(figsize=(10, 10))
     plt.imshow(figure, cmap='Greys_r')
-    plt.savefig('figures/manifold_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
+    plt.savefig('images/manifold_' + dataset_name + '_epoch_' + str((kk+1)*save_interval) + '.png')
 
 
