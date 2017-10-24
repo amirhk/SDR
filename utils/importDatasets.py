@@ -140,7 +140,7 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
 
   # random_ordering = np.random.permutation(tmp)
   random_ordering_a = np.random.permutation(tmp * (1 / num_classes))
-  random_ordering_b = np.random.permutation(tmp * (1 - 1 / num_classes))
+  random_ordering_b = np.random.permutation(tmp * (1 - 1 / num_classes)) + tmp * (1 / num_classes)
   random_ordering = np.concatenate((random_ordering_a, random_ordering_b), axis=0)
   tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
   tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
