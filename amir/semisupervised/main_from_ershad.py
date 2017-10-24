@@ -273,7 +273,7 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
 
   ## display a 2D plot of the digit classes in the latent space
 
-
+  fig = plt.figure()
   plt.scatter(x_test_encoded[:, 0,0], x_test_encoded[:, 0,1], linewidth = 0, c=y_test_label)
   plt.colorbar()
   # plt.show()
