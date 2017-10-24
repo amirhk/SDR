@@ -310,8 +310,6 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
                                           #                                 Plots
                                           # -------------------------------------
 
-
-
   def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, grid_x, grid_y):
       figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images))
       for i, yi in enumerate(grid_x):
@@ -376,19 +374,18 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
 
 if __name__ == "__main__":
 
-  # convex_alpha_list = [0, 0.25, 0.50, 0.75, 1]
+  convex_alpha_list = [0, 0.25, 0.50, 0.75, 1]
   # number_of_labeled_training_samples_list = [20, 50, 100, 500, 1000]
-  # number_of_unlabeled_training_samples = 10000
+  number_of_labeled_training_samples_list = [25000]
+  number_of_unlabeled_training_samples = 25000
 
-  # number_of_labeled_training_samples_list = [20, 50, 100, 500, 1000]
+  for number_of_labeled_training_samples in number_of_labeled_training_samples_list:
 
-  # for number_of_labeled_training_samples in number_of_labeled_training_samples_list:
+    for convex_alpha in convex_alpha_list:
 
-  #   for convex_alpha in convex_alpha_list:
+      main(number_of_labeled_training_samples, number_of_unlabeled_training_samples, convex_alpha)
 
-  #     main(number_of_labeled_training_samples, number_of_unlabeled_training_samples, convex_alpha)
-
-  main(1000, 10000, 0.5)
+  # main(1000, 10000, 0.5)
 
 
 
