@@ -107,7 +107,7 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
 
   tmp_counter = 0
   start_index_offset = 0
-  number_of_labeled_training_samples_from_each_class = int(number_of_labeled_training_samples / 10)
+  number_of_labeled_training_samples_from_each_class = int(number_of_labeled_training_samples / num_classes)
   for class_number in range(num_classes):
     selected_sample_indices_from_this_class = image_indices[class_number][start_index_offset : start_index_offset + number_of_labeled_training_samples_from_each_class]
 
@@ -131,7 +131,17 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
   tmp_x_train_labeled = np.repeat(tmp_x_train_labeled, ratio, axis=0)
   tmp_y_train_labeled = np.repeat(tmp_y_train_labeled, ratio, axis=0)
 
-  random_ordering = np.random.permutation(int(number_of_labeled_training_samples * ratio))
+  assert(tmp_x_train_labeled.shape[0] == tmp_y_train_labeled.shape[0])
+  tmp = tmp_x_train_labeled.shape[0]
+
+  # random_ordering = np.random.permutation(tmp)
+  # tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
+  # tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
+
+  # random_ordering = np.random.permutation(tmp)
+  random_ordering_a = np.random.permutation(tmp * (1 / num_classes))
+  random_ordering_b = np.random.permutation(tmp * (1 - 1 / num_classes))
+  random_ordering = np.concatenate((random_ordering_a, random_ordering_b), axis=0)
   tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
   tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
 
@@ -154,7 +164,7 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
 
   tmp_counter = 0
   start_index_offset = number_of_labeled_training_samples_from_each_class
-  number_of_unlabeled_training_samples_from_each_class = int(number_of_unlabeled_training_samples / 10)
+  number_of_unlabeled_training_samples_from_each_class = int(number_of_unlabeled_training_samples / num_classes)
   for class_number in range(num_classes):
     selected_sample_indices_from_this_class = image_indices[class_number][start_index_offset : start_index_offset + number_of_unlabeled_training_samples_from_each_class]
 
@@ -171,6 +181,13 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
 
     tmp_counter += number_of_unlabeled_training_samples_from_each_class
 
+
+  assert(tmp_x_train_unlabeled.shape[0] == tmp_y_train_unlabeled.shape[0])
+  tmp = tmp_x_train_unlabeled.shape[0]
+
+  random_ordering = np.random.permutation(tmp)
+  tmp_x_train_unlabeled = tmp_x_train_unlabeled[random_ordering,:]
+  tmp_y_train_unlabeled = tmp_y_train_unlabeled[random_ordering]
 
                                         # -------------------------------------
                                         #                                Return
