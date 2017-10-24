@@ -58,7 +58,7 @@ from importDatasets import importDatasetForSemisupervisedTraining
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
-fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',25000,25000)
+fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',1000,10000)
 (dataset_name,
   x_train,
   x_test,
@@ -79,12 +79,12 @@ x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
 x_total_test = np.concatenate([x_test,x_test],1)
 
 batch_size = 100
-latent_dim = 10
+latent_dim = 2
 epochs = 200
 epsilon_std = 1.0
-learning_rate = 0.00005
+learning_rate = 0.001
 intermediate_recon_layer_dim = 500
-intermediate_label_layer_dim = 10
+intermediate_label_layer_dim = 100
 
 # -----------------------------------------------------------------------------
 #                                                                   Build Model
@@ -146,7 +146,7 @@ decoder_h_2 = Dense(intermediate_label_layer_dim, activation='relu')
 y_decoded = Dense(num_classes, activation='sigmoid')
 #h_decoded_2 = decoder_h_2(z_l)
 z_l_dropout = dropout_class(z_l)
-h_decoded_2 = decoder_h_2(z_l_droout)
+h_decoded_2 = decoder_h_2(z_l)
 _y_decoded = y_decoded(h_decoded_2)
 
 yy = Input(batch_shape = (batch_size,num_classes))
