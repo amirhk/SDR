@@ -2,3 +2,5 @@ data/*
 utils/__pycache__/*
 *.pyc
 aug*.png
+experiments/
+.DS_Store
