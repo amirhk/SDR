@@ -101,10 +101,10 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
 
   # if ~ os.path.isdir('../experiments'):
   #   os.makedirs('../experiments')
-  experiment_dir_path = '../experiments/exp' +
-    '_____' +
-    str(datetime.now().strftime('%Y-%m-%d_____%H-%M-%S')) +
-    '_____' +
+  experiment_dir_path = '../experiments/exp' + \
+    '_____' + \
+    str(datetime.now().strftime('%Y-%m-%d_____%H-%M-%S')) + \
+    '_____' + \
     experiment_name
   os.makedirs(experiment_dir_path)
 
