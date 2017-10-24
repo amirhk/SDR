@@ -31,7 +31,7 @@ from scipy import linalg
 from scipy.stats import norm
 from sklearn import mixture
 
-from keras.layers import Input, Dense, Lambda, Reshape
+from keras.layers import Input, Dense, Lambda, Reshape, Dropout
 from keras.models import Model
 from keras import backend as K
 from keras import objectives , utils,optimizers
@@ -52,7 +52,6 @@ from importDatasets import importMnist
 from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
-
 from importDatasets import importDatasetForSemisupervisedTraining
 
 # -----------------------------------------------------------------------------
@@ -80,16 +79,22 @@ x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
 x_total_test = np.concatenate([x_test,x_test],1)
 
 batch_size = 100
-latent_dim = 2
-epochs = 100
+latent_dim = 10
+epochs = 200
 epsilon_std = 1.0
-learning_rate = 0.00003
+learning_rate = 0.00005
 intermediate_recon_layer_dim = 500
 intermediate_label_layer_dim = 10
 
 # -----------------------------------------------------------------------------
 #                                                                   Build Model
 # -----------------------------------------------------------------------------
+
+#def test_layer(args):
+#    ZZZ = args
+#    return ZZZ[:,:,:10]
+#    
+#z_test_layer = Lambda(test_layer)(z)
 
 x = Input(batch_shape=(batch_size, 2 * original_dim))
 
@@ -136,9 +141,12 @@ h_decoded = decoder_h(z)
 x_decoded_mean_reshaped = decoder_mean_reshaped(h_decoded)
 x_decoded_mean = decoded_mean(x_decoded_mean_reshaped)
 
+dropout_class = Dropout(0.5)
 decoder_h_2 = Dense(intermediate_label_layer_dim, activation='relu')
 y_decoded = Dense(num_classes, activation='sigmoid')
-h_decoded_2 = decoder_h_2(z_l)
+#h_decoded_2 = decoder_h_2(z_l)
+z_l_dropout = dropout_class(z_l)
+h_decoded_2 = decoder_h_2(z_l_droout)
 _y_decoded = y_decoded(h_decoded_2)
 
 yy = Input(batch_shape = (batch_size,num_classes))
@@ -163,6 +171,7 @@ vae.compile(optimizer=my_adam, loss=vae_loss)
 _x_reshaped_ = x_reshaped(x)
 _h_ = h(_x_reshaped_)
 _z_mean_ = z_mean(_h_)
+# z_mean_test = Lambda(test_layer)(_z_mean)
 _decoder_h_ =  decoder_h(_z_mean_)
 _decoder_mean_reshaped = decoder_mean_reshaped(_decoder_h_)
 _decoder_mean_ = decoded_mean(_decoder_mean_reshaped)
@@ -188,16 +197,16 @@ class ACCURACY(Callback):
 
     def on_epoch_end(self,batch,logs = {}):
         ii= pickle.load(open('counter', 'rb'))
-        ii= ii + 1
-        pickle.dump((ii),open('counter', 'wb'))
         _, b  = vaeencoder.predict(x_total_test, batch_size = batch_size)
-        Accuracy[ii-1, 0]
+        Accuracy[ii, 0]
 
         lll = np.argmax(b, axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
         ACC = 1 - n_error / 10000
-        Accuracy[ii-1,0] = ACC
+        Accuracy[ii,0] = ACC
         print('\n accuracy = ', ACC)
+        ii= ii + 1
+        pickle.dump((ii),open('counter', 'wb'))
 
 accuracy = ACCURACY()
 
