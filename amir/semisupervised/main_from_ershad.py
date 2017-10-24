@@ -93,15 +93,15 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
   # -----------------------------------------------------------------------------
 
   experiment_name = dataset_name + \
-    '___z_dim___' + str(latent_dim) + \
-    '___num_lab___' + str(number_of_labeled_training_samples) + \
-    '___num_unlab___' + str(number_of_unlabeled_training_samples) + \
-    '___x_loss_mult___' + str(convex_alpha) + \
-    '___y_loss_mult___' + str(1 - convex_alpha)
+    '_____z_dim_' + str(latent_dim) + \
+    '_____num_lab_' + str(number_of_labeled_training_samples) + \
+    '_____num_unlab_' + str(number_of_unlabeled_training_samples) + \
+    '_____x_loss_mult_' + str(convex_alpha) + \
+    '_____y_loss_mult_' + str(1 - convex_alpha)
 
   # if ~ os.path.isdir('../experiments'):
   #   os.makedirs('../experiments')
-  experiment_dir_path = '../experiments/exp_' + str(datetime.now()) + experiment_name
+  experiment_dir_path = '../experiments/exp_' + str(datetime.now().strftime('%Y-%m-%d-%H-%M-%S')) + '_' + experiment_name
   os.makedirs(experiment_dir_path)
 
 
