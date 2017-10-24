@@ -73,6 +73,7 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
 
   try:
       assert(round(ratio) == ratio)
+      ratio = int(ratio)
   except AssertionError:
       print('[ERROR] <# unlabeled> should be divisble by <# labeled>.')
       raise
@@ -128,8 +129,10 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
   # generateAndLoadSamplesSimilarTo(X_train, y_train, 'mnist', 1)
 
 
-  tmp_x_train_labeled = np.repeat(tmp_x_train_labeled, ratio, axis=0)
-  tmp_y_train_labeled = np.repeat(tmp_y_train_labeled, ratio, axis=0)
+  
+  tmp_x_train_labeled = np.tile(tmp_x_train_labeled, (ratio,1))
+  tmp_y_train_labeled = np.tile(tmp_y_train_labeled.reshape(number_of_labeled_training_samples,1), (ratio,1))
+  
 
   assert(tmp_x_train_labeled.shape[0] == tmp_y_train_labeled.shape[0])
   tmp = tmp_x_train_labeled.shape[0]
@@ -139,8 +142,8 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
   # tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
 
   # random_ordering = np.random.permutation(tmp)
-  random_ordering_a = np.random.permutation(tmp * (1 / num_classes))
-  random_ordering_b = np.random.permutation(tmp * (1 - 1 / num_classes)) + tmp * (1 / num_classes)
+  random_ordering_a = np.random.permutation(number_of_labeled_training_samples)
+  random_ordering_b = np.random.permutation(number_of_unlabeled_training_samples - number_of_labeled_training_samples) + number_of_labeled_training_samples
   random_ordering = np.concatenate((random_ordering_a, random_ordering_b), axis=0)
   tmp_x_train_labeled = tmp_x_train_labeled[random_ordering,:]
   tmp_y_train_labeled = tmp_y_train_labeled[random_ordering]
