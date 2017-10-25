@@ -44,13 +44,13 @@ fh_import_dataset = lambda : importMnist()
   original_dim,
   num_classes) = fh_import_dataset()
 
-
-x_val = x_train[50000:,:]
-y_val = y_train[50000:,:]
-x_train =x_train[:50000,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
-x_test = x_test[:50000,:] #np.reshape(x_test, (len(x_test), 28, 28, 1))
-y_train = y_train[:50000,:]
-y_test = y_test[:50000,:] 
+training_size = 55000
+x_val = x_train[training_size:,:]
+y_val = y_train[training_size:,:]
+x_train =x_train[:training_size,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
+x_test = x_test[:training_size,:] #np.reshape(x_test, (len(x_test), 28, 28, 1))
+y_train = y_train[:training_size,:]
+y_test = y_test[:training_size,:] 
 
 
  
@@ -59,7 +59,7 @@ latent_dim = 15
 epochs = 50
 intermediate_dim = 500
 epsilon_std = 1.0
-learning_rate = 0.0001
+learning_rate = 0.00001
 
 
 # -----------------------------------------------------------------------------
@@ -111,6 +111,7 @@ x_decoded_reshaped = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
 x_decoded = Flatten()
 
 h_d_y_1 = Dense(intermediate_dim, activation='relu')
+h_d_y_2 = Dense(intermediate_dim, activation='relu')
 y_decoded = Dense(10, activation='sigmoid')
 
 yy = Input(batch_shape = (batch_size,10))
@@ -142,7 +143,8 @@ _x_decoded = x_decoded(_x_decoded_reshaped)
 
 
 _h_d_y_1 = h_d_y_1(z)
-_y_decoded = y_decoded(_h_d_y_1)
+_h_d_y_2 = h_d_y_2(_h_d_y_1)
+_y_decoded = y_decoded(_h_d_y_2)
 
 ###### Define Loss ################################################################################
 
@@ -188,7 +190,8 @@ _x_decoded_reshaped_ = x_decoded_reshaped(_h_d_x_8_)
 _x_decoded_ = x_decoded(_x_decoded_reshaped_)
 
 _h_d_y_1_ = h_d_y_1(_z_mean_)
-_y_decoded_ = y_decoded(_h_d_y_1_)
+_h_d_y_2_ = h_d_y_2(_h_d_y_1_)
+_y_decoded_ = y_decoded(_h_d_y_2_)
 
 
 vaeencoder = Model(x,[_x_decoded_,_y_decoded_])
