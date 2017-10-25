@@ -23,11 +23,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import pickle
-import itertools
+
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import linalg
+
 from scipy.stats import norm
 from sklearn import mixture
 
@@ -37,6 +38,7 @@ from keras import backend as K
 from keras import objectives , utils,optimizers
 from keras.datasets import mnist
 from mpl_toolkits.mplot3d import Axes3D
+from keras.callbacks import Callback
 
 import sys
 sys.path.append('../../utils')
@@ -46,6 +48,8 @@ from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
 
+
+from datetime import datetime
 # -----------------------------------------------------------------------------
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
@@ -64,8 +68,8 @@ fh_import_dataset = lambda : importMnist()
   num_classes) = fh_import_dataset()
 
 batch_size = 100
-latent_dim = 3
-epochs = 0
+latent_dim = 10
+epochs = 5
 intermediate_dim = 500
 epsilon_std = 1.0
 learning_rate = 0.00001
@@ -74,6 +78,20 @@ learning_rate = 0.00001
 # -----------------------------------------------------------------------------
 #                                                                   Build Model
 # -----------------------------------------------------------------------------
+
+experiment_name = dataset_name + \
+  '_____z_dim_' + str(latent_dim) 
+
+  # if ~ os.path.isdir('../experiments'):
+  #   os.makedirs('../experiments')
+experiment_dir_path = '../experiments/exp' + \
+  '_____' + \
+  str(datetime.now().strftime('%Y-%m-%d_____%H-%M-%S')) + \
+  '_____' + \
+  experiment_name
+os.makedirs(experiment_dir_path)
+
+
 
 x = Input(batch_shape=(batch_size, original_dim))
 h = Dense(intermediate_dim, activation='relu')
@@ -123,13 +141,55 @@ vae.compile(optimizer=my_adam, loss=vae_loss)
 #                                                                   Train Model
 # -----------------------------------------------------------------------------
 
-model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
-vae.set_weights(model_weights)
+_h_ = h(x)
+_z_mean_ = z_mean(_h_)
+_decoder_h_ =  decoder_h(_z_mean_)
+_decoder_mean_ = decoder_mean(_decoder_h_)
+h_decoded_2_ = decoder_h_2(_z_mean_)
+_y_decoded_ = y_decoded(h_decoded_2_)
+
+vaeencoder = Model(x,[_decoder_mean_,_y_decoded_])
+
+
+_, b  = vaeencoder.predict(x_test,batch_size = batch_size)
+
+y_test_label = np.argmax(y_test,axis =1)
+
+Accuracy = np.zeros((epochs,1))
+ii=0
+pickle.dump((ii),open('counter','wb'))
+text_file_name = experiment_dir_path + '/accuracy_log.txt'
+class ACCURACY(Callback):
+
+    def on_epoch_end(self,batch,logs = {}):
+        ii= pickle.load(open('counter', 'rb'))
+        _, b  = vaeencoder.predict(x_test, batch_size = batch_size)
+        Accuracy[ii, 0]
+
+        lll = np.argmax(b, axis =1)
+        n_error = np.count_nonzero(lll - y_test_label)
+        ACC = 1 - n_error / 10000
+        Accuracy[ii,0] = ACC
+        print('\n accuracy = ', ACC)
+        ii= ii + 1
+        pickle.dump((ii),open('counter', 'wb'))
+        with open(text_file_name, 'a') as text_file:
+          print('Epoch #{} Accuracy:{} \n'.format(ii, ACC), file=text_file)
+
+accuracy = ACCURACY()
+
+
+
+
+
+#model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+#vae.set_weights(model_weights)
 
 vae.fit([x_train, y_train],[x_train,y_train],
         shuffle=True,
         epochs=epochs,
-        batch_size=batch_size)
+        batch_size=batch_size,
+        callbacks = [accuracy])
 
 model_weights = vae.get_weights()
 pickle.dump((model_weights), open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'wb'))
@@ -146,22 +206,14 @@ encoder = Model(x, _z_mean)
 x_test_encoded = encoder.predict(x_test, batch_size=batch_size)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2], linewidth = 0, c=y_test)
+ax.scatter(x_test_encoded[:, 0], x_test_encoded[:, 1], x_test_encoded[:, 2], linewidth = 0, c=y_test_label)
 #ax.colorbar()
 #ax.show()
 
 y_test_onehot = utils.to_categorical(y_test, num_classes)
 
 
-_h_ = h(x)
-_z_mean_ = z_mean(_h_)
-_decoder_h_ =  decoder_h(_z_mean_)
-_decoder_mean_ = decoder_mean(_decoder_h_)
-h_decoded_2_ = decoder_h_2(_z_mean_)
-_y_decoded_ = y_decoded(h_decoded_2_)
 
-vaeencoder = Model(x,[_decoder_mean_,_y_decoded_])
-x_decoded, b  = vaeencoder.predict(x_test,batch_size = batch_size)
 
 # build a digit generator that can sample from the learned distribution
 decoder_input = Input(shape=(latent_dim,))
@@ -170,24 +222,6 @@ _x_decoded_mean = decoder_mean(_h_decoded)
 generator = Model(decoder_input, _x_decoded_mean)
 
 
-                                        # -------------------------------------
-                                        #                              Accuracy
-                                        # -------------------------------------
-
-lll = np.zeros((10000,1))
-for i in range(10000):
-    m = b[i,:].reshape(10,).tolist()
-    lll[i,0] = m.index(max(m))
-
-lll
-
-lll.reshape(1,10000)
-lll
-lll = lll.reshape(1,10000).astype('uint8')
-
-n_error = np.count_nonzero(lll - y_test)
-
-print(1- n_error/10000)
 
 
                                         # -------------------------------------
@@ -202,7 +236,7 @@ cv_type = 'full'
 gmm = mixture.GaussianMixture(n_components=n_components, covariance_type=cv_type)
 gmm.fit(x_train_encoded)
 
-
+x_decoded, b  = vaeencoder.predict(x_test,batch_size = batch_size)
 
 
                                         # -------------------------------------
