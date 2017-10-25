@@ -52,6 +52,7 @@ from importDatasets import importSquareAndCross
 from importDatasets import importIris
 from importDatasets import importBalance
 from importDatasets import importGlass
+from importDatasets import importConcentricRings
 from importDatasets import importDatasetForSemisupervisedTraining
 
 from datetime import datetime
@@ -62,7 +63,8 @@ from datetime import datetime
 
 # fh_import_dataset = lambda : importIris()
 # fh_import_dataset = lambda : importBalance()
-fh_import_dataset = lambda : importGlass()
+# fh_import_dataset = lambda : importGlass()
+fh_import_dataset = lambda : importConcentricRings()
 
 (dataset_name,
   x_train,
@@ -79,10 +81,10 @@ latent_dim = 2
 epochs = 200
 epsilon_std = 1.0
 learning_rate = 0.0001
-intermediate_recon_layer_dim = 10
-intermediate_label_layer_dim = 10
+intermediate_recon_layer_dim = 50
+intermediate_label_layer_dim = 50
 
-shallow = True
+shallow = False
 
 # -----------------------------------------------------------------------------
 #                                                                  Path-related

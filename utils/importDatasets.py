@@ -310,6 +310,63 @@ def importSquareAndCross():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def importConcentricRings():
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  data_file_name = os.path.join(dirname, '..', 'data', 'Concentric_rings.txt')
+  data = np.loadtxt(data_file_name)
+
+  x = data[:,:2]
+  y = data[:,2] - 1
+
+  random_ordering = np.random.permutation(x.shape[0])
+  x = x[random_ordering,:]
+  y = y[random_ordering]
+
+  train_split = 0.70
+  split_index = int(np.round(x.shape[0] * train_split))
+  split_index = int(25 * round(float(split_index)/25))# rounded to the nearest 25
+
+  x_train = x[:split_index, :]
+  x_test = x[split_index:300, :]
+  y_train = y[:split_index]
+  y_test = y[split_index:300]
+
+  sample_dim = x_train.shape[1]
+  sample_channels = -1
+  original_dim = sample_dim
+  # num_classes = len(np.unique(y))
+  num_classes = int(np.max(y)) + 1
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  return ('concentric_rings', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+
+
+
+
+
+
 def importGlass():
   dirname, _ = os.path.split(os.path.abspath(__file__))
   data_file_name = os.path.join(dirname, '..', 'data', 'Glass.txt')
