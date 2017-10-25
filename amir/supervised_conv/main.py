@@ -44,7 +44,6 @@ fh_import_dataset = lambda : importMnistFashion()
   original_dim,
   num_classes) = fh_import_dataset()
 
-
 training_size = 55000
 x_val = x_train[training_size:,:]
 y_val = y_train[training_size:,:]
@@ -60,7 +59,7 @@ latent_dim = 15
 epochs = 50
 intermediate_dim = 500
 epsilon_std = 1.0
-learning_rate = 0.0001
+learning_rate = 0.0005
 
 
 # -----------------------------------------------------------------------------
@@ -112,6 +111,7 @@ x_decoded_reshaped = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
 x_decoded = Flatten()
 
 h_d_y_1 = Dense(intermediate_dim, activation='relu')
+h_d_y_2 = Dense(intermediate_dim, activation='relu')
 y_decoded = Dense(10, activation='sigmoid')
 
 yy = Input(batch_shape = (batch_size,10))
@@ -143,7 +143,8 @@ _x_decoded = x_decoded(_x_decoded_reshaped)
 
 
 _h_d_y_1 = h_d_y_1(z)
-_y_decoded = y_decoded(_h_d_y_1)
+_h_d_y_2 = h_d_y_2(_h_d_y_1)
+_y_decoded = y_decoded(_h_d_y_2)
 
 ###### Define Loss ################################################################################
 
@@ -189,7 +190,8 @@ _x_decoded_reshaped_ = x_decoded_reshaped(_h_d_x_8_)
 _x_decoded_ = x_decoded(_x_decoded_reshaped_)
 
 _h_d_y_1_ = h_d_y_1(_z_mean_)
-_y_decoded_ = y_decoded(_h_d_y_1_)
+_h_d_y_2_ = h_d_y_2(_h_d_y_1_)
+_y_decoded_ = y_decoded(_h_d_y_2_)
 
 
 vaeencoder = Model(x,[_x_decoded_,_y_decoded_])
@@ -222,8 +224,8 @@ class ACCURACY(Callback):
 
 accuracy = ACCURACY()
 
-model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
-vae.set_weights(model_weights)
+# model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+# vae.set_weights(model_weights)
 
 vae.fit([x_train, y_train],[x_train,y_train],
         shuffle=True,
