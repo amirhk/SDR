@@ -233,6 +233,7 @@ def importMnist():
 
 
 
+
 def importMnistFashion():
   print('[INFO] importing mnist-fashion...')
   # meta
@@ -241,14 +242,32 @@ def importMnistFashion():
   original_dim = sample_channels * sample_dim ** 2
   num_classes = 10
 
-  # print(os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_train.csv'))
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  x_train = pickle.load(open(os.path.join(dirname, '..', 'data', 'mnist-fashion', 'x_train'), 'rb'))
+  x_test = pickle.load(open(os.path.join(dirname, '..', 'data', 'mnist-fashion', 'x_test'), 'rb'))
+  y_train = pickle.load(open(os.path.join(dirname, '..', 'data', 'mnist-fashion', 'y_train'), 'rb'))
+  y_test = pickle.load(open(os.path.join(dirname, '..', 'data', 'mnist-fashion', 'y_test'), 'rb'))
+
+  return ('mnist-fashion', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+
+def generateMnistFashionPickledData():
+  print('[INFO] importing mnist-fashion...')
+  # meta
+  sample_dim = 28
+  sample_channels = 1
+  original_dim = sample_channels * sample_dim ** 2
+  num_classes = 10
+
+  # print(os.path.join(os.path.dirname(sys.argv[0]), '../data/mnist-fashion/fashion-mnist_train.csv'))
 
   dirname, _ = os.path.split(os.path.abspath(__file__))
-  train_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_train.csv')
-  test_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_test.csv')
+  train_file_name = os.path.join(dirname, '..', 'data', 'mnist-fashion', 'fashion-mnist_train.csv')
+  test_file_name = os.path.join(dirname, '..', 'data', 'mnist-fashion', 'fashion-mnist_test.csv')
 
-  # train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '..\\data\\fashionmnist\\fashion-mnist_train.csv')
-  # test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
+  # train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '..\\data\\mnist-fashion\\fashion-mnist_train.csv')
+  # test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/mnist-fashion/fashion-mnist_test.csv')
 
   train_meta_data = np.genfromtxt(train_file_name, delimiter=',')
   test_meta_data = np.genfromtxt(test_file_name, delimiter=',')
@@ -268,8 +287,14 @@ def importMnistFashion():
   y_train = utils.to_categorical(y_train, num_classes)
   y_test = utils.to_categorical(y_test, num_classes)
 
+  print('[INFO] pickling mnist-fashion...')
+
+  pickle.dump((x_train), open('../data/mnist-fashion/x_train', 'wb'))
+  pickle.dump((x_test), open('../data/mnist-fashion/x_test', 'wb'))
+  pickle.dump((y_train), open('../data/mnist-fashion/y_train', 'wb'))
+  pickle.dump((y_test), open('../data/mnist-fashion/y_test', 'wb'))
+
   print('[INFO] done.')
-  return ('mnist-fashion', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
 
 
