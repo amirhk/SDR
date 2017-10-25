@@ -29,7 +29,7 @@ import sys
 
 from keras import utils
 from keras.datasets import mnist
-from sklearn.datasets import fetch_olivetti_faces
+from sklearn.datasets import fetch_olivetti_faces, load_iris
 
 # import sys
 # import platform
@@ -45,6 +45,8 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
     fh_import_dataset = lambda : importMnist()
   elif dataset_string == 'mnist-fashion':
     fh_import_dataset = lambda : importMnistFashion()
+  elif dataset_string == 'iris':
+    fh_import_dataset = lambda : importIris()
 
   (dataset_name,
     x_train,
@@ -93,9 +95,9 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
                                         #                          Placeholders
                                         # -------------------------------------
 
-  tmp_x_train_labeled = np.zeros((number_of_labeled_training_samples, sample_dim**2))
+  tmp_x_train_labeled = np.zeros((number_of_labeled_training_samples, original_dim))
   tmp_y_train_labeled = np.zeros((number_of_labeled_training_samples))
-  tmp_x_train_unlabeled = np.zeros((number_of_unlabeled_training_samples, sample_dim**2))
+  tmp_x_train_unlabeled = np.zeros((number_of_unlabeled_training_samples, original_dim))
   tmp_y_train_unlabeled = np.zeros((number_of_unlabeled_training_samples))
 
 
@@ -129,10 +131,10 @@ def importDatasetForSemisupervisedTraining(dataset_string, number_of_labeled_tra
   # generateAndLoadSamplesSimilarTo(X_train, y_train, 'mnist', 1)
 
 
-  
+
   tmp_x_train_labeled = np.tile(tmp_x_train_labeled, (ratio,1))
   tmp_y_train_labeled = np.tile(tmp_y_train_labeled.reshape(number_of_labeled_training_samples,1), (ratio,1))
-  
+
 
   assert(tmp_x_train_labeled.shape[0] == tmp_y_train_labeled.shape[0])
   tmp = tmp_x_train_labeled.shape[0]
@@ -245,7 +247,6 @@ def importMnistFashion():
   train_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_train.csv')
   test_file_name = os.path.join(dirname, '..', 'data', 'fashionmnist', 'fashion-mnist_test.csv')
 
-
   # train_file_name = os.path.join(os.path.dirname(sys.argv[0]), '..\\data\\fashionmnist\\fashion-mnist_train.csv')
   # test_file_name = os.path.join(os.path.dirname(sys.argv[0]), '../data/fashionmnist/fashion-mnist_test.csv')
 
@@ -302,6 +303,134 @@ def importSquareAndCross():
 
 
 
+
+
+
+
+
+
+
+def importGlass():
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  data_file_name = os.path.join(dirname, '..', 'data', 'Glass.txt')
+  data = np.loadtxt(data_file_name)
+
+  x = data[:,:10]
+  y = data[:,10] - 1
+
+  random_ordering = np.random.permutation(x.shape[0])
+  x = x[random_ordering,:]
+  y = y[random_ordering]
+
+  train_split = 0.70
+  split_index = int(np.round(x.shape[0] * train_split))
+  split_index = int(25 * round(float(split_index)/25))# rounded to the nearest 25
+
+  x_train = x[:split_index, :]
+  x_test = x[split_index:200, :]
+  y_train = y[:split_index]
+  y_test = y[split_index:200]
+
+  sample_dim = x_train.shape[1]
+  sample_channels = -1
+  original_dim = sample_dim
+  # num_classes = len(np.unique(y))
+  num_classes = int(np.max(y)) + 1
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  return ('glass', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+
+
+def importBalance():
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  data_file_name = os.path.join(dirname, '..', 'data', 'Balance.txt')
+  data = np.loadtxt(data_file_name)
+
+  x = data[:,:4]
+  y = data[:,4] - 1
+
+  random_ordering = np.random.permutation(x.shape[0])
+  x = x[random_ordering,:]
+  y = y[random_ordering]
+
+  train_split = 0.70
+  split_index = int(np.round(x.shape[0] * train_split))
+  split_index = int(25 * round(float(split_index)/25))# rounded to the nearest 25
+
+  x_train = x[:split_index, :]
+  x_test = x[split_index:, :]
+  y_train = y[:split_index]
+  y_test = y[split_index:]
+
+  sample_dim = x_train.shape[1]
+  sample_channels = -1
+  original_dim = sample_dim
+  num_classes = len(np.unique(y))
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  return ('balance', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+
+
+def importIris():
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  data_file_name = os.path.join(dirname, '..', 'data', 'Iris.txt')
+  data = np.loadtxt(data_file_name)
+
+  x = data[:,:4]
+  y = data[:,4] - 1
+
+  random_ordering = np.random.permutation(x.shape[0])
+  x = x[random_ordering,:]
+  y = y[random_ordering]
+
+  train_split = 0.70
+  split_index = int(np.round(x.shape[0] * train_split))
+  split_index = int(25 * round(float(split_index)/25))# rounded to the nearest 25
+
+  x_train = x[:split_index, :]
+  x_test = x[split_index:, :]
+  y_train = y[:split_index]
+  y_test = y[split_index:]
+
+  sample_dim = x_train.shape[1]
+  sample_channels = -1
+  original_dim = sample_dim
+  num_classes = len(np.unique(y))
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  # iris = load_iris()
+  # X = iris.data
+  # y = iris.target
+
+  # random_ordering = np.random.permutation(x.shape[0])
+  # X = X[random_ordering,:]
+  # y = y[random_ordering]
+
+  # sample_dim = X.shape[1]
+  # sample_channels = -1
+  # original_dim = sample_dim
+  # num_classes = len(np.unique(y))
+
+  # x_train = X[:125,:]
+  # x_test = X[125:,:]
+
+  # y_train = y[:125]
+  # y_test = y[125:]
+
+  # y_train = utils.to_categorical(y_train, num_classes)
+  # y_test = utils.to_categorical(y_test, num_classes)
+
+  return ('iris', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
 
 

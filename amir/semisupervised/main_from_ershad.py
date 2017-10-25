@@ -48,6 +48,8 @@ from importDatasets import importMnist
 from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
+from importDatasets import importIris
+from importDatasets import importBalance
 from importDatasets import importDatasetForSemisupervisedTraining
 
 from datetime import datetime
@@ -60,27 +62,28 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     #                                                                    Fetch Data
     # -----------------------------------------------------------------------------
 
-    fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('mnist',number_of_labeled_training_samples,number_of_unlabeled_training_samples)
+    fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('iris',number_of_labeled_training_samples,number_of_unlabeled_training_samples)
     (dataset_name,
         x_train,
         x_test,
         y_train,
         y_test,
         sample_dim,
-        sample_channels,
+        _, # sample_channels,
         original_dim,
         num_classes,
         x_train_labeled,
         y_train_labeled,
-        x_val,
-        y_val,
+        _, # x_val,
+        _, # y_val,
         x_train_unlabeled,
         y_train_unlabeled) = fh_import_dataset()
 
     x_total = np.concatenate([x_train_unlabeled,x_train_labeled],1)
     x_total_test = np.concatenate([x_test,x_test],1)
 
-    batch_size = 100
+    # batch_size = 100
+    batch_size = 10
     latent_dim = 10
     epochs = 200
     epsilon_std = 1.0
@@ -374,18 +377,19 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
 
 if __name__ == "__main__":
 
-    convex_alpha_list = [0, 0.25, 0.50, 0.75, 1]
-    # number_of_labeled_training_samples_list = [20, 50, 100, 500, 1000]
-    number_of_labeled_training_samples_list = [25000]
-    number_of_unlabeled_training_samples = 25000
+    # convex_alpha_list = [0, 0.25, 0.50, 0.75, 1]
+    # # number_of_labeled_training_samples_list = [20, 50, 100, 500, 1000]
+    # number_of_labeled_training_samples_list = [25000]
+    # number_of_unlabeled_training_samples = 25000
 
-    for number_of_labeled_training_samples in number_of_labeled_training_samples_list:
+    # for number_of_labeled_training_samples in number_of_labeled_training_samples_list:
 
-        for convex_alpha in convex_alpha_list:
+    #     for convex_alpha in convex_alpha_list:
 
-            main(number_of_labeled_training_samples, number_of_unlabeled_training_samples, convex_alpha)
+    #         main(number_of_labeled_training_samples, number_of_unlabeled_training_samples, convex_alpha)
 
   # main(1000, 10000, 0.5)
+  main(15, 30, 0.5)
 
 
 
