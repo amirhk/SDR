@@ -23,22 +23,22 @@ import matplotlib.pyplot as plt
 
 # from tensorflow.python import debug as tf_debug
 
-# from keras.datasets import mnist
-# import numpy as np
-# (X_train, _), (X_test, _) = mnist.load_data()
+from keras.datasets import mnist
+import numpy as np
+(X_train, _), (X_test, _) = mnist.load_data()
 
-# X_train = X_train.astype('float32') / 255.
-# X_test = X_test.astype('float32') / 255.
-# X_train = X_train.reshape((len(X_train), np.prod(X_train.shape[1:])))
-# X_test = X_test.reshape((len(X_test), np.prod(X_test.shape[1:])))
-# print(X_train.shape)
-# print(X_test.shape)
+X_train = X_train.astype('float32') / 255.
+X_test = X_test.astype('float32') / 255.
+X_train = X_train.reshape((len(X_train), np.prod(X_train.shape[1:])))
+X_test = X_test.reshape((len(X_test), np.prod(X_test.shape[1:])))
+print(X_train.shape)
+print(X_test.shape)
 
 
-X_train, Y_train = pickle.load(open('plane_dataset_train', 'rb'))
-X_train = X_train.reshape([X_train.shape[0], -1])
-X_test, Y_test = pickle.load(open('plane_dataset_test', 'rb'))
-X_test = X_test.reshape([X_test.shape[0], -1])
+# X_train, Y_train = pickle.load(open('plane_dataset_train', 'rb'))
+# X_train = X_train.reshape([X_train.shape[0], -1])
+# X_test, Y_test = pickle.load(open('plane_dataset_test', 'rb'))
+# X_test = X_test.reshape([X_test.shape[0], -1])
 
 
 # img_size = [40,40]
