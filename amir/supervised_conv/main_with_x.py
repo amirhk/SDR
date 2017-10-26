@@ -56,8 +56,8 @@ y_test = y_test[:training_size,:]
 
 batch_size = 100
 latent_dim = 15
-epochs = 300
-intermediate_dim = 500
+epochs = 50
+intermediate_dim = 300
 epsilon_std = 1.0
 learning_rate = 0.00001
 
@@ -82,11 +82,11 @@ os.makedirs(experiment_dir_path)
 ########## Network Layers ########################################################
 x = Input(batch_shape=(batch_size, original_dim))
 x_reshaped = Reshape((28,28,1))
-h_e_1 = Conv2D(16, (3, 3), activation='relu', padding='same')
+h_e_1 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_e_2 = MaxPooling2D((2, 2), padding='same')
-h_e_3 = Conv2D(16, (3, 3), activation='relu', padding='same')
+h_e_3 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_e_4 = MaxPooling2D((2, 2), padding='same')
-h_e_5 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_e_5 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_e_6 = MaxPooling2D((2, 2), padding='same')
 h_e_7 = Flatten()
 
@@ -99,13 +99,13 @@ def sampling(args):
                               stddev=epsilon_std)
     return z_mean + K.exp(z_log_var / 2) * epsilon
 
-h_d_x_1 = Dense(4*4*8, activation = 'relu')
-h_d_x_2 = Reshape((4,4,8))
-h_d_x_3 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_d_x_1 = Dense(4*4*16, activation = 'relu')
+h_d_x_2 = Reshape((4,4,16))
+h_d_x_3 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_d_x_4 = UpSampling2D((2, 2))
-h_d_x_5 = Conv2D(16, (3, 3), activation='relu', padding='same')
+h_d_x_5 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_d_x_6 = UpSampling2D((2, 2))
-h_d_x_7 = Conv2D(16, (3, 3), activation='relu')
+h_d_x_7 = Conv2D(32, (3, 3), activation='relu')
 h_d_x_8 = UpSampling2D((2, 2))
 x_decoded_reshaped = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
 x_decoded = Flatten()
@@ -149,7 +149,6 @@ _y_decoded = y_decoded(_h_d_y_2)
 ###### Define Loss ################################################################################
 
 def vae_loss(x, _x_decoded):
-
     xent_loss = original_dim * objectives.binary_crossentropy(x, _x_decoded)
     kl_loss = - 0.5 * K.sum(1 + _z_log_var - K.square(_z_mean) - K.exp(_z_log_var), axis=-1)
     y_loss= 10 * objectives.categorical_crossentropy(yy, _y_decoded)
@@ -206,12 +205,10 @@ ii=0
 pickle.dump((ii),open('counter','wb'))
 text_file_name = experiment_dir_path + '/accuracy_log.txt'
 class ACCURACY(Callback):
-
     def on_epoch_end(self,batch,logs = {}):
         ii= pickle.load(open('counter', 'rb'))
         _, b  = vaeencoder.predict(x_test, batch_size = batch_size)
         Accuracy[ii, 0]
-
         lll = np.argmax(b, axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
         ACC = 1 - n_error / 10000
@@ -318,9 +315,21 @@ ax.set_title('Reconstructed Test Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
+# ax = plt.subplot(1,3,3)
+# x_samples_c = gmm.sample(10000)
+# x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+# x_samples_c = generator.predict(x_samples_c)
+# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Generated Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
+
 ax = plt.subplot(1,3,3)
-x_samples_c = gmm.sample(10000)
-x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+#x_samples_c = gmm.sample(10000)
+x_samples_c = gmm.sample(number_of_sample_images ** 2)
+x_samples_c = x_samples_c[0]
+#x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
 x_samples_c = generator.predict(x_samples_c)
 canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
 plt.imshow(canvas, cmap='Greys_r')
@@ -328,7 +337,9 @@ ax.set_title('Generated Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
-plt.show()
+
+# plt.show()
+plt.savefig('latent15D.pdf', format='pdf', dpi=300)
 # plt.savefig('images/'+ dataset_name + '_samples.png')
 
 
