@@ -56,10 +56,10 @@ y_test = y_test[:training_size,:]
  
 batch_size = 100
 latent_dim = 15
-epochs = 50
+epochs = 300
 intermediate_dim = 500
 epsilon_std = 1.0
-learning_rate = 0.00001
+learning_rate = 0.001
 
 
 # -----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ x = Input(batch_shape=(batch_size, original_dim))
 x_reshaped = Reshape((28,28,1))
 h_e_1 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_e_2 = MaxPooling2D((2, 2), padding='same')
-h_e_3 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_e_3 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_e_4 = MaxPooling2D((2, 2), padding='same')
 h_e_5 = Conv2D(8, (3, 3), activation='relu', padding='same')
 h_e_6 = MaxPooling2D((2, 2), padding='same')
@@ -103,7 +103,7 @@ h_d_x_1 = Dense(4*4*8, activation = 'relu')
 h_d_x_2 = Reshape((4,4,8))
 h_d_x_3 = Conv2D(8, (3, 3), activation='relu', padding='same')
 h_d_x_4 = UpSampling2D((2, 2))
-h_d_x_5 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_d_x_5 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_d_x_6 = UpSampling2D((2, 2))
 h_d_x_7 = Conv2D(16, (3, 3), activation='relu')
 h_d_x_8 = UpSampling2D((2, 2))
@@ -223,7 +223,7 @@ class ACCURACY(Callback):
           print('Epoch #{} Accuracy:{} \n'.format(ii, ACC), file=text_file)
 
 accuracy = ACCURACY()
-
+#
 model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
 vae.set_weights(model_weights)
 
