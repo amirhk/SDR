@@ -21,6 +21,7 @@ import sys
 sys.path.append('../../utils')
 
 from importDatasets import importMnist
+from importDatasets import importCifar
 from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
@@ -31,8 +32,9 @@ from datetime import datetime
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
+fh_import_dataset = lambda : importCifar()
 # fh_import_dataset = lambda : importMnist()
-fh_import_dataset = lambda : importMnistFashion()
+# fh_import_dataset = lambda : importMnistFashion()
 
 (dataset_name,
   x_train,
@@ -44,8 +46,7 @@ fh_import_dataset = lambda : importMnistFashion()
   original_dim,
   num_classes) = fh_import_dataset()
 
-
-training_size = 55000
+training_size = 45000
 x_val = x_train[training_size:,:]
 y_val = y_train[training_size:,:]
 x_train =x_train[:training_size,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
@@ -58,9 +59,9 @@ y_test = y_test[:training_size,:]
 batch_size = 100
 latent_dim = 15
 epochs = 50
-intermediate_dim = 500
+intermediate_dim = 300
 epsilon_std = 1.0
-learning_rate = 0.0001
+learning_rate = 0.0003
 
 
 # -----------------------------------------------------------------------------
@@ -82,12 +83,12 @@ os.makedirs(experiment_dir_path)
 
 ########## Network Layers ########################################################
 x = Input(batch_shape=(batch_size, original_dim))
-x_reshaped = Reshape((28,28,1))
-h_e_1 = Conv2D(16, (3, 3), activation='relu', padding='same')
+x_reshaped = Reshape((32,32,3))
+h_e_1 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_e_2 = MaxPooling2D((2, 2), padding='same')
-h_e_3 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_e_3 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_e_4 = MaxPooling2D((2, 2), padding='same')
-h_e_5 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_e_5 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_e_6 = MaxPooling2D((2, 2), padding='same')
 h_e_7 = Flatten()
 
@@ -100,18 +101,19 @@ def sampling(args):
                               stddev=epsilon_std)
     return z_mean + K.exp(z_log_var / 2) * epsilon
 
-h_d_x_1 = Dense(4*4*8, activation = 'relu')
-h_d_x_2 = Reshape((4,4,8))
-h_d_x_3 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_d_x_1 = Dense(4*4*16, activation = 'relu')
+h_d_x_2 = Reshape((4,4,16))
+h_d_x_3 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_d_x_4 = UpSampling2D((2, 2))
-h_d_x_5 = Conv2D(8, (3, 3), activation='relu', padding='same')
+h_d_x_5 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_d_x_6 = UpSampling2D((2, 2))
-h_d_x_7 = Conv2D(16, (3, 3), activation='relu')
+h_d_x_7 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_d_x_8 = UpSampling2D((2, 2))
-x_decoded_reshaped = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
+x_decoded_reshaped = Conv2D(3, (3, 3), activation='sigmoid', padding='same')
 x_decoded = Flatten()
 
 h_d_y_1 = Dense(intermediate_dim, activation='relu')
+h_d_y_2 = Dense(intermediate_dim, activation='relu')
 y_decoded = Dense(10, activation='sigmoid')
 
 yy = Input(batch_shape = (batch_size,10))
@@ -143,12 +145,12 @@ _x_decoded = x_decoded(_x_decoded_reshaped)
 
 
 _h_d_y_1 = h_d_y_1(z)
-_y_decoded = y_decoded(_h_d_y_1)
+_h_d_y_2 = h_d_y_2(_h_d_y_1)
+_y_decoded = y_decoded(_h_d_y_2)
 
 ###### Define Loss ################################################################################
 
 def vae_loss(x, _x_decoded):
-
     xent_loss = original_dim * objectives.binary_crossentropy(x, _x_decoded)
     kl_loss = - 0.5 * K.sum(1 + _z_log_var - K.square(_z_mean) - K.exp(_z_log_var), axis=-1)
     y_loss= 10 * objectives.categorical_crossentropy(yy, _y_decoded)
@@ -189,7 +191,8 @@ _x_decoded_reshaped_ = x_decoded_reshaped(_h_d_x_8_)
 _x_decoded_ = x_decoded(_x_decoded_reshaped_)
 
 _h_d_y_1_ = h_d_y_1(_z_mean_)
-_y_decoded_ = y_decoded(_h_d_y_1_)
+_h_d_y_2_ = h_d_y_2(_h_d_y_1_)
+_y_decoded_ = y_decoded(_h_d_y_2_)
 
 
 vaeencoder = Model(x,[_x_decoded_,_y_decoded_])
@@ -204,12 +207,10 @@ ii=0
 pickle.dump((ii),open('counter','wb'))
 text_file_name = experiment_dir_path + '/accuracy_log.txt'
 class ACCURACY(Callback):
-
     def on_epoch_end(self,batch,logs = {}):
         ii= pickle.load(open('counter', 'rb'))
         _, b  = vaeencoder.predict(x_test, batch_size = batch_size)
         Accuracy[ii, 0]
-
         lll = np.argmax(b, axis =1)
         n_error = np.count_nonzero(lll - y_test_label)
         ACC = 1 - n_error / 10000
@@ -222,8 +223,8 @@ class ACCURACY(Callback):
 
 accuracy = ACCURACY()
 
-model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
-vae.set_weights(model_weights)
+# model_weights = pickle.load(open('weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name, 'rb'))
+# vae.set_weights(model_weights)
 
 vae.fit([x_train, y_train],[x_train,y_train],
         shuffle=True,
@@ -288,9 +289,10 @@ def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, g
     figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images))
     for i, yi in enumerate(grid_x):
         for j, xi in enumerate(grid_y):
-            digit = x_samples[i * number_of_sample_images + j, :].reshape(sample_dim, sample_dim)
+            digit = x_samples[i * number_of_sample_images + j, :].reshape(sample_dim, sample_dim, 3)
             figure[i * sample_dim: (i + 1) * sample_dim,
-                   j * sample_dim: (j + 1) * sample_dim] = digit
+                   j * sample_dim: (j + 1) * sample_dim,
+                   :] = digit
     return figure
 
 
@@ -316,9 +318,21 @@ ax.set_title('Reconstructed Test Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
+# ax = plt.subplot(1,3,3)
+# x_samples_c = gmm.sample(10000)
+# x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+# x_samples_c = generator.predict(x_samples_c)
+# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Generated Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
+
 ax = plt.subplot(1,3,3)
-x_samples_c = gmm.sample(10000)
-x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+#x_samples_c = gmm.sample(10000)
+x_samples_c = gmm.sample(number_of_sample_images ** 2)
+x_samples_c = x_samples_c[0]
+#x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
 x_samples_c = generator.predict(x_samples_c)
 canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
 plt.imshow(canvas, cmap='Greys_r')
@@ -326,7 +340,9 @@ ax.set_title('Generated Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
-plt.show()
+
+# plt.show()
+plt.savefig('latent15D.pdf', format='pdf', dpi=300)
 # plt.savefig('images/'+ dataset_name + '_samples.png')
 
 
