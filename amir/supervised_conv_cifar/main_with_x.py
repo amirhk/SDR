@@ -289,9 +289,10 @@ def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, g
     figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images))
     for i, yi in enumerate(grid_x):
         for j, xi in enumerate(grid_y):
-            digit = x_samples[i * number_of_sample_images + j, :].reshape(sample_dim, sample_dim)
+            digit = x_samples[i * number_of_sample_images + j, :].reshape(sample_dim, sample_dim, 3)
             figure[i * sample_dim: (i + 1) * sample_dim,
-                   j * sample_dim: (j + 1) * sample_dim] = digit
+                   j * sample_dim: (j + 1) * sample_dim,
+                   :] = digit
     return figure
 
 
