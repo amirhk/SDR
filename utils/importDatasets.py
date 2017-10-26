@@ -26,6 +26,7 @@ import sklearn
 import pickle
 import os
 import sys
+import scipy.io as sio
 
 from keras import utils
 from keras.datasets import mnist, cifar10
@@ -236,7 +237,7 @@ def importMnist():
 
 
 def importCifar():
-  print('[INFO] importing cifar-digits...')
+  print('[INFO] importing cifar...')
   # meta
   sample_dim = 32
   sample_channels = 3
@@ -260,6 +261,47 @@ def importCifar():
   return ('cifar', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
 
+
+def importSvhn():
+  print('[INFO] importing svhn...')
+  # meta
+  sample_dim = 32
+  sample_channels = 3
+  original_dim = sample_channels * sample_dim ** 2
+  num_classes = 10
+
+  # import
+  dirname, _ = os.path.split(os.path.abspath(__file__))
+  meta_train = sio.loadmat(os.path.join(dirname, '..', 'data', 'svhn', 'train_32x32.mat'))
+  meta_test = sio.loadmat(os.path.join(dirname, '..', 'data', 'svhn', 'test_32x32.mat'))
+
+  tmp_x_train = meta_train['X']
+  tmp_x_test = meta_test['X']
+
+  y_train = meta_train['y'] - 1
+  y_test = meta_test['y'] - 1
+
+  # so far we've read in .mat files.. but this ordering needs to be cleaned up
+  x_train = np.zeros((tmp_x_train.shape[3], tmp_x_train.shape[0], tmp_x_train.shape[1], tmp_x_train.shape[2]))
+  for t in range(tmp_x_train.shape[3]):
+      x_train[t,:,:,:] = tmp_x_train[:,:,:,t]
+
+  x_test = np.zeros((tmp_x_test.shape[3], tmp_x_test.shape[0], tmp_x_test.shape[1], tmp_x_test.shape[2]))
+  for t in range(tmp_x_test.shape[3]):
+      x_test[t,:,:,:] = tmp_x_test[:,:,:,t]
+
+  # other processing
+  x_train = x_train.astype('float32') / 255.
+  x_test = x_test.astype('float32') / 255.
+  x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+  x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  print('[INFO] done.')
+
+  return ('svhn', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
 
 
 

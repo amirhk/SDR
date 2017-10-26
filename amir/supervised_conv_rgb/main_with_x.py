@@ -21,21 +21,39 @@ import sys
 sys.path.append('../../utils')
 
 from importDatasets import importMnist
-from importDatasets import importCifar
 from importDatasets import importMnistFashion
-from importDatasets import importOlivetti
-from importDatasets import importSquareAndCross
-
+from importDatasets import importCifar
+from importDatasets import importSvhn
 
 from datetime import datetime
 # -----------------------------------------------------------------------------
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
-fh_import_dataset = lambda : importCifar()
 # fh_import_dataset = lambda : importMnist()
 # fh_import_dataset = lambda : importMnistFashion()
+# fh_import_dataset = lambda : importCifar()
+# (dataset_name,
+#   x_train,
+#   x_test,
+#   y_train,
+#   y_test,
+#   sample_dim,
+#   sample_channels,
+#   original_dim,
+#   num_classes) = fh_import_dataset()
 
+# training_size = 45000
+# x_val = x_train[training_size:,:]
+# y_val = y_train[training_size:,:]
+# x_train =x_train[:training_size,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
+# y_train = y_train[:training_size,:]
+# x_test = x_test[:training_size,:] #np.reshape(x_test, (len(x_test), 28, 28, 1))
+# y_test = y_test[:training_size,:]
+
+
+
+fh_import_dataset = lambda : importSvhn()
 (dataset_name,
   x_train,
   x_test,
@@ -47,12 +65,12 @@ fh_import_dataset = lambda : importCifar()
   num_classes) = fh_import_dataset()
 
 training_size = 45000
-x_val = x_train[training_size:,:]
-y_val = y_train[training_size:,:]
-x_train =x_train[:training_size,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
-x_test = x_test[:training_size,:] #np.reshape(x_test, (len(x_test), 28, 28, 1))
-y_train = y_train[:training_size,:]
-y_test = y_test[:training_size,:]
+x_val = x_train[60000:72000,:]
+y_val = y_train[60000:72000,:]
+x_train =x_train[:60000,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
+y_train = y_train[:60000,:]
+x_test = x_test[:26000,:] #np.reshape(x_test, (len(x_test), 28, 28, 1))
+y_test = y_test[:26000,:]
 
 
 
@@ -286,13 +304,12 @@ x_decoded, b  = vaeencoder.predict(x_test,batch_size = batch_size)
 
 
 def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, grid_x, grid_y):
-    figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images))
+    figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images, 3))
     for i, yi in enumerate(grid_x):
         for j, xi in enumerate(grid_y):
             digit = x_samples[i * number_of_sample_images + j, :].reshape(sample_dim, sample_dim, 3)
             figure[i * sample_dim: (i + 1) * sample_dim,
-                   j * sample_dim: (j + 1) * sample_dim,
-                   :] = digit
+                   j * sample_dim: (j + 1) * sample_dim, :] = digit
     return figure
 
 
