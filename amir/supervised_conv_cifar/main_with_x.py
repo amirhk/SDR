@@ -21,6 +21,7 @@ import sys
 sys.path.append('../../utils')
 
 from importDatasets import importMnist
+from importDatasets import importCifar
 from importDatasets import importMnistFashion
 from importDatasets import importOlivetti
 from importDatasets import importSquareAndCross
@@ -31,8 +32,9 @@ from datetime import datetime
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
+fh_import_dataset = lambda : importCifar()
 # fh_import_dataset = lambda : importMnist()
-fh_import_dataset = lambda : importMnistFashion()
+# fh_import_dataset = lambda : importMnistFashion()
 
 (dataset_name,
   x_train,
@@ -44,7 +46,7 @@ fh_import_dataset = lambda : importMnistFashion()
   original_dim,
   num_classes) = fh_import_dataset()
 
-training_size = 55000
+training_size = 45000
 x_val = x_train[training_size:,:]
 y_val = y_train[training_size:,:]
 x_train =x_train[:training_size,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
@@ -81,7 +83,7 @@ os.makedirs(experiment_dir_path)
 
 ########## Network Layers ########################################################
 x = Input(batch_shape=(batch_size, original_dim))
-x_reshaped = Reshape((28,28,1))
+x_reshaped = Reshape((32,32,3))
 h_e_1 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_e_2 = MaxPooling2D((2, 2), padding='same')
 h_e_3 = Conv2D(32, (3, 3), activation='relu', padding='same')
@@ -105,9 +107,9 @@ h_d_x_3 = Conv2D(16, (3, 3), activation='relu', padding='same')
 h_d_x_4 = UpSampling2D((2, 2))
 h_d_x_5 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_d_x_6 = UpSampling2D((2, 2))
-h_d_x_7 = Conv2D(32, (3, 3), activation='relu')
+h_d_x_7 = Conv2D(32, (3, 3), activation='relu', padding='same')
 h_d_x_8 = UpSampling2D((2, 2))
-x_decoded_reshaped = Conv2D(1, (3, 3), activation='sigmoid', padding='same')
+x_decoded_reshaped = Conv2D(3, (3, 3), activation='sigmoid', padding='same')
 x_decoded = Flatten()
 
 h_d_y_1 = Dense(intermediate_dim, activation='relu')

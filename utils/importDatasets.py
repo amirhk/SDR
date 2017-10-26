@@ -28,8 +28,9 @@ import os
 import sys
 
 from keras import utils
-from keras.datasets import mnist
+from keras.datasets import mnist, cifar10
 from sklearn.datasets import fetch_olivetti_faces, load_iris
+
 
 # import sys
 # import platform
@@ -229,6 +230,43 @@ def importMnist():
   print('[INFO] done.')
 
   return ('mnist', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+
+
+def importCifar():
+  print('[INFO] importing cifar-digits...')
+  # meta
+  sample_dim = 32
+  sample_channels = 3
+  original_dim = sample_channels * sample_dim ** 2
+  num_classes = 10
+
+  # import
+  (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+
+  # other processing
+  x_train = x_train.astype('float32') / 255.
+  x_test = x_test.astype('float32') / 255.
+  x_train = x_train.reshape((len(x_train), np.prod(x_train.shape[1:])))
+  x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
+
+  y_train = utils.to_categorical(y_train, num_classes)
+  y_test = utils.to_categorical(y_test, num_classes)
+
+  print('[INFO] done.')
+
+  return ('cifar', x_train, x_test, y_train, y_test, sample_dim, sample_channels, original_dim, num_classes)
+
+
+
+
+
+
+
+
+
 
 
 
