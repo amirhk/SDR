@@ -58,9 +58,9 @@ from datetime import datetime
 
 
 def main(number_of_labeled_training_samples, number_of_unlabeled_training_samples, convex_alpha):
-    # -----------------------------------------------------------------------------
-    #                                                                    Fetch Data
-    # -----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #                                                                 Fetch Data
+    # --------------------------------------------------------------------------
 
     fh_import_dataset = lambda : importDatasetForSemisupervisedTraining('iris',number_of_labeled_training_samples,number_of_unlabeled_training_samples)
     (dataset_name,
@@ -91,9 +91,9 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     intermediate_recon_layer_dim = 500
     intermediate_label_layer_dim = 100
 
-    # -----------------------------------------------------------------------------
-    #                                                                  Path-related
-    # -----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #                                                               Path-related
+    # --------------------------------------------------------------------------
 
     experiment_name = dataset_name + \
         '_____z_dim_' + str(latent_dim) + \
@@ -112,9 +112,9 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     os.makedirs(experiment_dir_path)
 
 
-    # -----------------------------------------------------------------------------
-    #                                                                   Build Model
-    # -----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #                                                                Build Model
+    # --------------------------------------------------------------------------
 
     #def test_layer(args):
     #    ZZZ = args
@@ -175,10 +175,10 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     h_decoded_2 = decoder_h_2(z_l)
     _y_decoded = y_decoded(h_decoded_2)
 
-    yy = Input(batch_shape = (batch_size,num_classes))
+    yy = Input(batch_shape = (batch_size, num_classes))
 
     def vae_loss(x, x_decoded_mean):
-        x_ent_loss = 2*original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
+        x_ent_loss = 2 * original_dim * objectives.binary_crossentropy(x, x_decoded_mean)
         kl_loss_u = - 0.5 * K.sum(1 + _z_log_var[:,0,:] - K.square(_z_mean[:,0,:]) - K.exp(_z_log_var[:,0,:]), axis=-1)
         kl_loss_l = - 0.5 * K.sum(1 + _z_log_var[:,1,:] - K.square(_z_mean[:,1,:]) - K.exp(_z_log_var[:,1,:]), axis=-1)
         y_loss= num_classes * objectives.categorical_crossentropy(yy, _y_decoded)
@@ -186,8 +186,8 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
 
     my_adam = optimizers.Adam(lr=learning_rate, beta_1=0.1)
 
-    vae = Model(inputs = [x,yy], outputs =[x_decoded_mean,_y_decoded]) # Model(x,x_decoded_mean)
-    vae.compile(optimizer=my_adam, loss=vae_loss)
+    vae = Model(inputs = [x, yy], outputs =[x_decoded_mean, _y_decoded])
+    vae.compile(optimizer = my_adam, loss = vae_loss)
 
     _x_reshaped_ = x_reshaped(x)
     _h_ = h(_x_reshaped_)
@@ -205,38 +205,55 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     h_decoded_2_ = decoder_h_2(z_aux)
     _y_decoded_ = y_decoded(h_decoded_2_)
 
-    vaeencoder = Model(inputs = x,outputs=  [_decoder_mean_,_y_decoded_])
+    # --------------------------------------------------------------------------
+    #                                                     Build Auxiliary Models
+    # --------------------------------------------------------------------------
 
-    _, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
+    vaeencoder = Model(inputs = x, outputs = [_decoder_mean_, _y_decoded_])
 
-    y_test_label = np.argmax(y_test,axis =1)
+    # build a model to project inputs on the latent space
+    encoder = Model(x, _z_mean)
+
+    # build a digit generator that can sample from the learned distribution
+    decoder_input = Input(shape=(latent_dim,))
+    _h_decoded = decoder_h(decoder_input)
+    _x_decoded_mean_reshaped = decoder_mean_reshaped(_h_decoded)
+    generator = Model(decoder_input, _x_decoded_mean_reshaped)
+
+    _, one_hot_predictions  = vaeencoder.predict(x_total_test, batch_size = batch_size)
+
+    # --------------------------------------------------------------------------
+    #                                                    Setup Accuracy Callback
+    # --------------------------------------------------------------------------
+
+    y_test_label = np.argmax(y_test, axis =1)
 
     Accuracy = np.zeros((epochs,1))
-    ii=0
+    ii = 0
     pickle.dump((ii),open('counter','wb'))
     text_file_name = experiment_dir_path + '/accuracy_log.txt'
     class ACCURACY(Callback):
 
         def on_epoch_end(self,batch,logs = {}):
-            ii= pickle.load(open('counter', 'rb'))
-            _, b  = vaeencoder.predict(x_total_test, batch_size = batch_size)
+            ii = pickle.load(open('counter', 'rb'))
+            _, one_hot_predictions  = vaeencoder.predict(x_total_test, batch_size = batch_size)
             Accuracy[ii, 0]
 
-            lll = np.argmax(b, axis =1)
-            n_error = np.count_nonzero(lll - y_test_label)
+            not_hot_predictions = np.argmax(one_hot_predictions, axis = 1)
+            n_error = np.count_nonzero(not_hot_predictions - y_test_label)
             ACC = 1 - n_error / 10000
-            Accuracy[ii,0] = ACC
+            Accuracy[ii, 0] = ACC
             print('\n accuracy = ', ACC)
-            ii= ii + 1
+            ii = ii + 1
             pickle.dump((ii),open('counter', 'wb'))
             with open(text_file_name, 'a') as text_file:
               print('Epoch #{} Accuracy:{} \n'.format(ii, ACC), file=text_file)
 
     accuracy = ACCURACY()
 
-    # -----------------------------------------------------------------------------
-    #                                                                   Train Model
-    # -----------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+    #                                                                Train Model
+    # --------------------------------------------------------------------------
 
     weights_file_name = '../saved_weights/weights_vaesdr_' + str(latent_dim) + 'd_trained_on_' + dataset_name
     # if os.path.isfile(weights_file_name):
@@ -250,20 +267,19 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
             shuffle=True,
             epochs=epochs,
             batch_size=batch_size,
-            callbacks = [accuracy])
+            callbacks=[accuracy])
 
     model_weights = vae.get_weights()
     pickle.dump((model_weights), open(weights_file_name, 'wb'))
 
-    # -----------------------------------------------------------------------------
-    #                                                                      Analysis
-    # -----------------------------------------------------------------------------
-
-    # build a model to project inputs on the latent space
-    encoder = Model(x, _z_mean)
+    # --------------------------------------------------------------------------
+    #                                                                   Analysis
+    # --------------------------------------------------------------------------
 
     # display a 3D plot of the digit classes in the latent space
+    x_train_encoded = encoder.predict(x_total, batch_size=batch_size)
     x_test_encoded = encoder.predict(x_total_test, batch_size=batch_size)
+    x_test_decoded, _ = vaeencoder.predict(x_total_test, batch_size=batch_size)
 
 
     #fig = plt.figure()
@@ -277,7 +293,7 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     ## display a 2D plot of the digit classes in the latent space
 
     fig = plt.figure()
-    plt.scatter(x_test_encoded[:, 0,0], x_test_encoded[:, 0,1], linewidth = 0, c=y_test_label)
+    plt.scatter(x_test_encoded[:,0,0], x_test_encoded[:,0,1], linewidth=0, c=y_test_label)
     plt.colorbar()
     # plt.show()
     plt.savefig(experiment_dir_path + '/latent_space.png')
@@ -285,22 +301,9 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     #y_test_onehot = utils.to_categorical(y_test, num_classes)
 
 
-
-    x_decoded, b  = vaeencoder.predict(x_total_test,batch_size = batch_size)
-
-    # build a digit generator that can sample from the learned distribution
-    decoder_input = Input(shape=(latent_dim,))
-    _h_decoded = decoder_h(decoder_input)
-    _x_decoded_mean_reshaped = decoder_mean_reshaped(_h_decoded)
-    generator = Model(decoder_input, _x_decoded_mean_reshaped)
-
-
-                                            # -------------------------------------
-                                            #                               Fit GMM
-                                            # -------------------------------------
-
-    # display a 2D plot of the digit classes in the latent space
-    x_train_encoded = encoder.predict(x_total, batch_size=batch_size)
+                                            # ----------------------------------
+                                            #                            Fit GMM
+                                            # ----------------------------------
 
     n_components = num_classes
     cv_type = 'full'
@@ -308,10 +311,9 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     gmm.fit(x_train_encoded[:,0,:])
 
 
-
-                                            # -------------------------------------
-                                            #                                 Plots
-                                            # -------------------------------------
+                                            # ----------------------------------
+                                            #                              Plots
+                                            # ----------------------------------
 
     def getFigureOfSamplesForInput(x_samples, sample_dim, number_of_sample_images, grid_x, grid_y):
         figure = np.zeros((sample_dim * number_of_sample_images, sample_dim * number_of_sample_images))
@@ -338,7 +340,7 @@ def main(number_of_labeled_training_samples, number_of_unlabeled_training_sample
     ax.get_yaxis().set_visible(False)
 
     ax = plt.subplot(1,3,2)
-    x_samples_b = x_decoded[:,:784]
+    x_samples_b = x_test_decoded[:,:784]
     canvas = getFigureOfSamplesForInput(x_samples_b, sample_dim, number_of_sample_images, grid_x, grid_y)
     plt.imshow(canvas, cmap='Greys_r')
     ax.set_title('Reconstructed Test Images', fontsize=8)

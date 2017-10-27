@@ -30,8 +30,6 @@ from datetime import datetime
 #                                                                    Fetch Data
 # -----------------------------------------------------------------------------
 
-# fh_import_dataset = lambda : importMnist()
-# fh_import_dataset = lambda : importMnistFashion()
 # fh_import_dataset = lambda : importCifar()
 # (dataset_name,
 #   x_train,
@@ -293,7 +291,7 @@ cv_type = 'full'
 gmm = mixture.GaussianMixture(n_components=n_components, covariance_type=cv_type)
 gmm.fit(x_train_encoded)
 
-x_decoded, b  = vaeencoder.predict(x_test,batch_size = batch_size)
+x_decoded, b  = vaeencoder.predict(x_test, batch_size = batch_size)
 
 
                                         # -------------------------------------

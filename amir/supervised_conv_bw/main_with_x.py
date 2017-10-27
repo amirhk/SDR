@@ -22,9 +22,6 @@ sys.path.append('../../utils')
 
 from importDatasets import importMnist
 from importDatasets import importMnistFashion
-from importDatasets import importOlivetti
-from importDatasets import importSquareAndCross
-
 
 from datetime import datetime
 # -----------------------------------------------------------------------------
