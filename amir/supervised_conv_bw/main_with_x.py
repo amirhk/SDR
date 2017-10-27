@@ -315,27 +315,27 @@ ax.set_title('Reconstructed Test Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
 
-# ax = plt.subplot(1,3,3)
-# x_samples_c = gmm.sample(10000)
-# x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
-# x_samples_c = generator.predict(x_samples_c)
-# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
-# plt.imshow(canvas, cmap='Greys_r')
-# ax.set_title('Generated Images', fontsize=8)
-# ax.get_xaxis().set_visible(False)
-# ax.get_yaxis().set_visible(False)
-
 ax = plt.subplot(1,3,3)
-#x_samples_c = gmm.sample(10000)
-x_samples_c = gmm.sample(number_of_sample_images ** 2)
-x_samples_c = x_samples_c[0]
-#x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+x_samples_c = gmm.sample(10000)
+x_samples_c = np.random.permutation(x_samples_c[0]) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
 x_samples_c = generator.predict(x_samples_c)
 canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
 plt.imshow(canvas, cmap='Greys_r')
 ax.set_title('Generated Images', fontsize=8)
 ax.get_xaxis().set_visible(False)
 ax.get_yaxis().set_visible(False)
+
+# ax = plt.subplot(1,3,3)
+# #x_samples_c = gmm.sample(10000)
+# x_samples_c = gmm.sample(number_of_sample_images ** 2)
+# x_samples_c = x_samples_c[0]
+# #x_samples_c = np.random.permutation(x_samples_c) # need to randomly permute because gmm.sample samples 1000 from class 1, then 1000 from class 2, etc.
+# x_samples_c = generator.predict(x_samples_c)
+# canvas = getFigureOfSamplesForInput(x_samples_c, sample_dim, number_of_sample_images, grid_x, grid_y)
+# plt.imshow(canvas, cmap='Greys_r')
+# ax.set_title('Generated Images', fontsize=8)
+# ax.get_xaxis().set_visible(False)
+# ax.get_yaxis().set_visible(False)
 
 
 # plt.show()

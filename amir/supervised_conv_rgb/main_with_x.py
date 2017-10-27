@@ -64,7 +64,6 @@ fh_import_dataset = lambda : importSvhn()
   original_dim,
   num_classes) = fh_import_dataset()
 
-training_size = 45000
 x_val = x_train[60000:72000,:]
 y_val = y_train[60000:72000,:]
 x_train =x_train[:60000,:] #np.reshape(x_train, (len(x_train), 28, 28, 1))  # adapt this if using `channels_first` image data format
