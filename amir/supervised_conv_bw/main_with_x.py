@@ -52,7 +52,7 @@ y_test = y_test[:training_size,:]
 
 
 batch_size = 100
-latent_dim = 15
+latent_dim = 2
 epochs = 50
 intermediate_dim = 300
 epsilon_std = 1.0
